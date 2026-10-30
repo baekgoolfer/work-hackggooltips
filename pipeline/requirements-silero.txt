@@ -2,6 +2,6 @@
 #   pip install --no-deps -r requirements-silero.txt          (scripts/setup_python.sh --with-silero does this)
 # numpy and packaging are already pinned in requirements.lock.txt. Verified on Python 3.13.2 / macOS arm64
 # (onnxruntime wheel is about 22 MB). The model file itself (silero_vad.onnx, MIT) is fetched separately, see setup_python.sh.
-onnxruntime==1.30.0
+onnxruntime==1.31.0
 flatbuffers==25.12.19
 protobuf==7.36.2
