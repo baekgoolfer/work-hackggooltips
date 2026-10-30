@@ -17,7 +17,7 @@
 # the pin together with the CUDA libraries, then re-run `python -m mcap.asr_faster_whisper check --load`.
 faster-whisper==1.1.1
 ctranslate2==4.5.0
-numpy==1.26.4
+numpy==2.5.4
 
 # CUDA 12 runtime libraries. Either install them with the distribution (cuBLAS 12 + cuDNN 9, see docs/ASR_SERVER_LINUX.md) or, as an
 # alternative that stays inside the venv, uncomment these two and put their lib directories on LD_LIBRARY_PATH (a systemd drop-in).
