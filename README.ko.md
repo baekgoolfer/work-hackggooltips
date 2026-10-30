@@ -46,7 +46,7 @@ Catch Everything은 Mac이 재생하는 소리(통화의 모든 상대방)와 �
 
 ```bash
 # 복제 주소는 이 저장소 페이지에 나오는 HTTPS 주소입니다
-git clone <repository-url> meeting-capture
+git clone -b catch-everything https://github.com/baekgoolfer/work-hackggooltips.git meeting-capture
 cd meeting-capture
 make install ARGS="--dry-run --python --with-silero --pre-download-model"   # 계획만 본다
 make install ARGS="--python --with-silero --pre-download-model"             # 설치. 먼저 녹음 법적 고지를 보여 주고 yes 입력을 받는다 (터미널이 없으면 ARGS에 --accept-legal-notice를 더해 명시적으로 동의)
@@ -70,7 +70,7 @@ scripts/make_launchagent.sh --load       # 위 확인 전에는 거부된다
 
 ### 디스크 이미지로 설치 (개발 환경이 없는 분을 위해)
 
-앱을 직접 빌드해서 개발 도구가 없는 사람에게 복사본을 건네려면 `make dmg`로 파일 하나, `CATE-<버전>.dmg`(볼륨 이름은 "Catch Everything")를 만듭니다. 이 안에 `CATE.app`이 들어 있고, 앱 안에 파이프라인, 설치 도우미, Python 런타임이 있습니다. 받은 사람은 `CATE.app`을 Applications로 끌어다 놓고 엽니다. 앱은 빌드한 사람이 직접 만든 자체 서명 인증서로 서명하며 Apple 공증을 받지 않았으므로 처음 한 번 macOS 경고가 뜹니다(Control-클릭 > 열기, 또는 시스템 설정 > 개인정보 보호 및 보안 > 그래도 열기). 첫 실행에서 앱이 터미널의 안내형 설치(다운로드 약 4 GB)를 제안합니다. 이 저장소는 파일을 어디에도 올리지 않고, 내려받을 수 있는 파일이 있다고 주장하지도 않습니다. 누군가에게 이런 파일을 받았다면 먼저 사용 안내를 읽으세요: [docs/USER_GUIDE.ko.md](docs/USER_GUIDE.ko.md) (영어: [docs/USER_GUIDE.md](docs/USER_GUIDE.md)). 빌드, 공유, 시험 방법은 [docs/DISTRIBUTE.md](docs/DISTRIBUTE.md)입니다. 이 앱은 통화에 참여한 다른 사람을 녹음합니다. 먼저 알려야 합니다(위의 법적 고지 참고). 실제 통화로 확인된 것은 Zoom뿐이고, 이 설치 방식은 아직 새 Mac에서 해 보지 않았습니다.
+앱을 직접 빌드해서 개발 도구가 없는 사람에게 복사본을 건네려면 `make dmg`로 파일 하나, `CATE-<버전>.dmg`(볼륨 이름은 "Catch Everything")를 만듭니다. 이 안에 `CATE.app`이 들어 있고, 앱 안에 파이프라인, 설치 도우미, Python 런타임이 있습니다. 받은 사람은 `CATE.app`을 Applications로 끌어다 놓고 엽니다. 앱은 빌드한 사람이 직접 만든 자체 서명 인증서로 서명하며 Apple 공증을 받지 않았으므로 처음 한 번 macOS 경고가 뜹니다(Control-클릭 > 열기, 또는 시스템 설정 > 개인정보 보호 및 보안 > 그래도 열기). 첫 실행에서 앱이 터미널의 안내형 설치(다운로드 약 4 GB)를 제안합니다. 0.2.0 버전을 빌드한 파일은 GitHub 릴리스 [cate-v0.2.0](https://github.com/baekgoolfer/work-hackggooltips/releases/tag/cate-v0.2.0)에 `.sha256` 파일과 함께 올라가 있습니다. 둘을 같은 폴더에 받아 `shasum -a 256 -c CATE-0.2.0.dmg.sha256`로 확인하세요. 누군가에게 이런 파일을 받았다면 먼저 사용 안내를 읽으세요: [docs/USER_GUIDE.ko.md](docs/USER_GUIDE.ko.md) (영어: [docs/USER_GUIDE.md](docs/USER_GUIDE.md)). 빌드, 공유, 시험 방법은 [docs/DISTRIBUTE.md](docs/DISTRIBUTE.md)입니다. 이 앱은 통화에 참여한 다른 사람을 녹음합니다. 먼저 알려야 합니다(위의 법적 고지 참고). 실제 통화로 확인된 것은 Zoom뿐이고, 이 설치 방식은 아직 새 Mac에서 해 보지 않았습니다.
 
 ## 감지 방식
 

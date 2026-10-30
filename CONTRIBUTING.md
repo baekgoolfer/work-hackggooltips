@@ -28,7 +28,7 @@ You need an Apple silicon Mac with macOS 14.4 or later (16 GB of RAM or more rec
 
 ```bash
 # the clone address is the HTTPS address shown on this repository's page
-git clone <repository-url> meeting-capture
+git clone -b catch-everything https://github.com/baekgoolfer/work-hackggooltips.git meeting-capture
 cd meeting-capture
 python3.13 -m venv .venv                                       # Python 3.12 or 3.13 (3.11 and older do not work)
 .venv/bin/pip install -r pipeline/requirements.client.txt     # numpy and truststore: enough for the Python tests

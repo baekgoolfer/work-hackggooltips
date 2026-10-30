@@ -26,7 +26,7 @@ The Python packages are pinned by version in `pipeline/requirements.lock.txt` an
 
 ```bash
 # the clone address is the HTTPS address shown on this repository's page
-git clone <repository-url> meeting-capture
+git clone -b catch-everything https://github.com/baekgoolfer/work-hackggooltips.git meeting-capture
 cd meeting-capture
 ```
 

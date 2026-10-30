@@ -49,7 +49,7 @@ Plan for about 10 minutes of your own time plus the downloads (about 3.6 GB). Re
 ```bash
 # 1. Get the source (the clone address is the HTTPS address shown on this repository's page) and look at the install plan
 #    (nothing is changed by --dry-run)
-git clone <repository-url> meeting-capture
+git clone -b catch-everything https://github.com/baekgoolfer/work-hackggooltips.git meeting-capture
 cd meeting-capture
 make install ARGS="--dry-run --python --with-silero --pre-download-model"
 
@@ -97,7 +97,7 @@ Building, permissions, the optional fixed signing identity, upgrading and uninst
 
 ### Install from a disk image (for people without a developer setup)
 
-If you build the app yourself and want to hand a copy to somebody who has no developer tools, `make dmg` makes ONE file, `CATE-<version>.dmg` (the volume is named "Catch Everything"): it contains `CATE.app`, with its pipeline, the install helper and a Python runtime inside. The person who gets it drags `CATE.app` to Applications and opens it. The app is signed with its builder's own self-signed identity and is not notarized, so macOS shows a warning once (Control-click > Open, or System Settings > Privacy & Security > Open Anyway); at the first launch the app offers a guided installer in Terminal (about 4 GB of downloads). Nothing here uploads the file anywhere, and this repository does not claim that a download exists. If you got such a file from somebody, read the user guide first: [docs/USER_GUIDE.md](docs/USER_GUIDE.md) (Korean: [docs/USER_GUIDE.ko.md](docs/USER_GUIDE.ko.md)). How to build, share and test it: [docs/DISTRIBUTE.md](docs/DISTRIBUTE.md). The app records the other people in your calls: tell them first (see the legal notice above). Only Zoom has been verified in real calls, and this installer has not been run on a clean Mac yet.
+If you build the app yourself and want to hand a copy to somebody who has no developer tools, `make dmg` makes ONE file, `CATE-<version>.dmg` (the volume is named "Catch Everything"): it contains `CATE.app`, with its pipeline, the install helper and a Python runtime inside. The person who gets it drags `CATE.app` to Applications and opens it. The app is signed with its builder's own self-signed identity and is not notarized, so macOS shows a warning once (Control-click > Open, or System Settings > Privacy & Security > Open Anyway); at the first launch the app offers a guided installer in Terminal (about 4 GB of downloads). A built copy of version 0.2.0 is attached to the GitHub release [cate-v0.2.0](https://github.com/baekgoolfer/work-hackggooltips/releases/tag/cate-v0.2.0) together with its `.sha256` file; check it with `shasum -a 256 -c CATE-0.2.0.dmg.sha256` in the folder where you saved both. If you got such a file from somebody, read the user guide first: [docs/USER_GUIDE.md](docs/USER_GUIDE.md) (Korean: [docs/USER_GUIDE.ko.md](docs/USER_GUIDE.ko.md)). How to build, share and test it: [docs/DISTRIBUTE.md](docs/DISTRIBUTE.md). The app records the other people in your calls: tell them first (see the legal notice above). Only Zoom has been verified in real calls, and this installer has not been run on a clean Mac yet.
 
 ## How detection works
 
