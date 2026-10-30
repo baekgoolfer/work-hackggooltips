@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "profile": "company",
+  "revision": 6,
+  "issued": "2026-10-14T09:00:00+09:00",
+  "min_pipeline_version": "0.2.0",
+  "lanes": {
+    "asr_remote": "allow",
+    "asr_cloud": "allow",
+    "llm": "allow",
+    "calendar": "allow",
+    "drive": "allow"
+  },
+  "approvals": {
+    "asr_cloud": "",
+    "llm": "LEGAL-78",
+    "drive": "   "
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "profile": "company",
+  "revision": 12,
+  "issued": "2026-10-14T09:00:00+09:00",
+  "min_pipeline_version": "0.2.0",
+  "support": {
+    "contact": "IT 헬프데스크 #it-help"
+  },
+  "lanes": {
+    "asr_remote": "allow",
+    "asr_cloud": "deny",
+    "llm": "deny",
+    "calendar": "deny",
+    "drive": "allow"
+  },
+  "approvals": {
+    "drive": "TICKET-1234"
+  },
+  "local_only": {
+    "default": false,
+    "locked": false
+  },
+  "recording": {
+    "enabled": true
+  },
+  "asr": {
+    "allowed_engines": [
+      "whisper",
+      "remote"
+    ],
+    "allowed_hosts": [
+      "asr.example.internal"
+    ],
+    "allow_foreign": false,
+    "daily_audio_minutes_cap": 240,
+    "send_vocab": {
+      "server": true,
+      "cloud": false
+    },
+    "org_consents": [
+      {
+        "engine": "remote",
+        "host": "asr.example.internal",
+        "port": 443,
+        "protocol": "mcap-asr/1",
+        "backend_kind": "server",
+        "ca_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "attest_build_sha256": [
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "use": "both",
+        "expires": "2027-10-14"
+      }
+    ]
+  },
+  "archive": {
+    "allowed_roots": [
+      "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+    ],
+    "local_roots": []
+  },
+  "llm": {
+    "claude_bin_pin": {
+      "team_id": "ABCDE12345"
+    },
+    "child_env": {}
+  },
+  "runtime": {
+    "root": "/Library/Application Support/MeetingCapture/releases"
+  },
+  "defaults": {
+    "ASR_ENGINE": "auto"
+  },
+  "enforced": {
+    "AUDIO_RETENTION_DAYS": "30"
+  },
+  "ext": {
+    "ring": "pilot",
+    "note": "ext is free-form: both parsers ignore it",
+    "nested": {
+      "anything": [
+        1,
+        2,
+        {
+          "goes": null
+        }
+      ]
+    }
+  }
+}

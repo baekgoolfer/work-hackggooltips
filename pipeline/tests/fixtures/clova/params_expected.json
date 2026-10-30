@@ -1,0 +1,72 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-20",
+    "note": "Written from the public documentation of the NAVER CLOVA Speech long-sentence API (local file upload: POST /recognizer/upload, https://api.ncloud-docs.com/docs/ai-application-service-clovaspeech-longsentence-local; request fields of the upload example and the Object Storage page for the response fields), NOT recorded from the service. The documentation does not describe the answer of a SYNC call beyond a sample whose JSON has syntax errors: field names, units and the shape of every answer below are unverified until the first live call by the owner. Replace these files with recorded answers to a synthetic TTS clip then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "the params part build_params makes from a vocabulary and a diarization verdict; single-character terms, aliases, other scripts and duplicates never go out"
+  },
+  "vocabulary_txt": "# domain terms (invented for this fixture)\nAcme\nAcmeScan-CXR\n510(k)\n네\nA\nPre-Sub\n한국어 용어\nacme\nFoo, Inc.\n日本語の用語\nAcme = 애크미 | 액미\n",
+  "terms": [
+    "Acme",
+    "AcmeScan-CXR",
+    "510(k)",
+    "Pre-Sub",
+    "한국어 용어",
+    "Foo Inc."
+  ],
+  "cases": [
+    {
+      "name": "enko, diarization on, vocabulary",
+      "language": "enko",
+      "diarization": true,
+      "params": {
+        "language": "enko",
+        "completion": "sync",
+        "wordAlignment": true,
+        "fullText": true,
+        "noiseFiltering": true,
+        "diarization": {
+          "enable": true
+        },
+        "boostings": [
+          {
+            "words": "Acme"
+          },
+          {
+            "words": "AcmeScan-CXR"
+          },
+          {
+            "words": "510(k)"
+          },
+          {
+            "words": "Pre-Sub"
+          },
+          {
+            "words": "한국어 용어"
+          },
+          {
+            "words": "Foo Inc."
+          }
+        ]
+      }
+    },
+    {
+      "name": "ko-KR, diarization off, no vocabulary",
+      "language": "ko-KR",
+      "diarization": false,
+      "no_terms": true,
+      "params": {
+        "language": "ko-KR",
+        "completion": "sync",
+        "wordAlignment": true,
+        "fullText": true,
+        "noiseFiltering": true,
+        "diarization": {
+          "enable": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Distribution of the company package of the app. scripts/build_pkg.sh fills the words between two @ signs (VERSION,
+  PKG_ID, ORGANIZATION, COMPONENT_PKG, APP_NAME = the human name of the app) and runs productbuild on it (its distribution option). Regenerate it with the script instead of editing it.
+
+  The two guards sit HERE, before the Installer copies anything: hostArchitectures="arm64" refuses an Intel Mac (the app is arm64 only,
+  see docs/DEPLOY.md), and the allowed-os-versions / volume-check blocks refuse a macOS older than 14.4 (the Process Tap API of the
+  system audio capture; the app's LSMinimumSystemVersion). scripts/pkg/preinstall checks the same two facts again, because an MDM that
+  unpacks the component package skips this file, and it fails with a plain message that the MDM reports.
+-->
+<installer-gui-script minSpecVersion="2">
+    <title>@APP_NAME@</title>
+    <organization>@ORGANIZATION@</organization>
+    <options customize="never" require-scripts="false" rootVolumeOnly="true" hostArchitectures="arm64"/>
+    <allowed-os-versions>
+        <os-version min="14.4"/>
+    </allowed-os-versions>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="14.4"/>
+        </allowed-os-versions>
+    </volume-check>
+    <choices-outline>
+        <line choice="default">
+            <line choice="@PKG_ID@"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="@PKG_ID@" visible="false">
+        <pkg-ref id="@PKG_ID@"/>
+    </choice>
+    <pkg-ref id="@PKG_ID@" version="@VERSION@" onConclusion="none">@COMPONENT_PKG@</pkg-ref>
+</installer-gui-script>

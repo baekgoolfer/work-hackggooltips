@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements of the COMPANY build of the app (scripts/build_pkg.sh with an app identity signs a copy of the app with them,
+  with the hardened runtime and a secure timestamp). The personal build (scripts/build_app.sh, self-signed identity) has no hardened
+  runtime and no entitlements and does not use this file. Passing this file is an administrator action together with the Developer ID identity.
+
+  Only what the app really does is listed. Under the hardened runtime everything else is refused:
+
+  com.apple.security.device.audio-input
+      The microphone track (mic.wav). The hardened runtime blocks microphone capture without it. The permission prompt itself is still the
+      Microphone entry of System Settings > Privacy & Security (NSMicrophoneUsageDescription in Info.plist).
+
+  com.apple.security.automation.apple-events
+      Sending Apple Events to Google Chrome: only used when ENABLED_PLATFORMS contains meet (the app reads the address and title of Meet
+      tabs). The company install does not enable meet, but the code path is part of the binary and would fail silently without the
+      entitlement (NSAppleEventsUsageDescription in Info.plist). Remove this key from the file if the organisation never wants Meet.
+
+  Deliberately NOT here: com.apple.security.cs.allow-jit, allow-unsigned-executable-memory, disable-library-validation,
+  disable-executable-page-protection, get-task-allow, and every com.apple.security.app-sandbox key (the app is not sandboxed: it starts the
+  pipeline, reads the Drive folder and writes under ~/Library). The Python pipeline is a child process with its own signature, not code that
+  this app loads, so no library-validation exception is needed.
+
+  System audio (the "System Audio Recording" permission, Core Audio Process Tap) is a TCC permission without an entitlement of its own.
+  [미검증] Whether Process Tap capture works under the hardened runtime with exactly these entitlements has to be tested on a device
+  (docs/LIVE_TEST.md, administrator action) before any rollout; macOS asks for Microphone and System Audio Recording again because the signing
+  identity changes (docs/MIGRATION.md).
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.device.audio-input</key>
+	<true/>
+	<key>com.apple.security.automation.apple-events</key>
+	<true/>
+</dict>
+</plist>

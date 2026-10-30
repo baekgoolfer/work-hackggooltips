@@ -1,0 +1,21 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-16",
+    "note": "Written from the documentation of the Azure AI Speech fast transcription REST API (api-version 2025-10-15) and the design appendix, NOT recorded from the service. Field names, units and the shape of the error answer are unverified until the first live call (SPEC 18). Replace this file with a recorded answer to a synthetic TTS clip of the owner's own voice then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 429 with Retry-After: the service is throttling; the engine waits and tries again, then reports EngineTransient"
+  },
+  "status": 429,
+  "headers": {
+    "retry-after": "3",
+    "content-type": "application/json"
+  },
+  "body": {
+    "error": {
+      "code": "429",
+      "message": "Requests to the transcription endpoint exceeded the call rate limit. Try again later."
+    }
+  }
+}

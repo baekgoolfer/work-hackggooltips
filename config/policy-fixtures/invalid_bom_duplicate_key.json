@@ -1,0 +1,8 @@
+﻿{
+  "schema": 1,
+  "profile": "company",
+  "revision": 7,
+  "min_pipeline_version": "0.2.0",
+  "lanes": {"asr_remote": "deny", "drive": "deny"},
+  "lanes": {"asr_remote": "allow", "drive": "allow"}
+}

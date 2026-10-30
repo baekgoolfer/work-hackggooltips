@@ -1,0 +1,200 @@
+{
+ "config_keys": [
+  {
+   "key": "LOCAL_ONLY_DEFAULT",
+   "default": "0"
+  },
+  {
+   "key": "ASR_ENGINE",
+   "default": "whisper"
+  },
+  {
+   "key": "ASR_FALLBACK",
+   "default": "none"
+  },
+  {
+   "key": "ASR_LOCAL_MIN_RAM_GB",
+   "default": "16"
+  },
+  {
+   "key": "ASR_LOCAL_MAX_RTF",
+   "default": "0.25"
+  },
+  {
+   "key": "ASR_REMOTE_URL",
+   "default": "(empty)"
+  },
+  {
+   "key": "ASR_REMOTE_CA_FILE",
+   "default": "(empty)"
+  },
+  {
+   "key": "ASR_REMOTE_MAX_WAIT_S",
+   "default": "120"
+  },
+  {
+   "key": "ASR_AZURE_REGION",
+   "default": "koreacentral"
+  },
+  {
+   "key": "ASR_AZURE_HOST",
+   "default": "(empty)"
+  },
+  {
+   "key": "ASR_AZURE_LOCALES",
+   "default": "(empty)"
+  },
+  {
+   "key": "ASR_AZURE_BIAS",
+   "default": "1.0"
+  },
+  {
+   "key": "ASR_AZURE_USD_PER_HOUR",
+   "default": "0"
+  },
+  {
+   "key": "ASR_CLOUD_DAILY_MINUTES",
+   "default": "240"
+  },
+  {
+   "key": "ASR_REQUEST_TIMEOUT_S",
+   "default": "90"
+  },
+  {
+   "key": "ASR_RETRY_MAX",
+   "default": "3"
+  },
+  {
+   "key": "ASR_CIRCUIT_FAILS",
+   "default": "3"
+  },
+  {
+   "key": "ASR_CIRCUIT_COOLDOWN_S",
+   "default": "120"
+  },
+  {
+   "key": "ASR_ALLOW_DOWNLOAD",
+   "default": "1"
+  },
+  {
+   "key": "ASR_SEND_VOCAB",
+   "default": "1"
+  },
+  {
+   "key": "LOCAL_ARCHIVE_DIR",
+   "default": "SUPPORT_DIR/local-meetings"
+  },
+  {
+   "key": "LOCAL_ARCHIVE_RETENTION_DAYS",
+   "default": "0"
+  },
+  {
+   "key": "STAGING_FAILED_RETENTION_DAYS",
+   "default": "0"
+  },
+  {
+   "key": "MIC_MUTE_GATE",
+   "default": "off"
+  },
+  {
+   "key": "LOG_CONTENT",
+   "default": "1"
+  },
+  {
+   "key": "LOG_RETENTION_DAYS",
+   "default": "0"
+  },
+  {
+   "key": "APP_LOG_MAX_MB",
+   "default": "0"
+  },
+  {
+   "key": "STATUS_INCLUDE_USAGE",
+   "default": "0"
+  },
+  {
+   "key": "MCAP_POLICY_PATH",
+   "default": "(unset; environment variable, not a config key)"
+  },
+  {
+   "key": "policy.schema / profile / revision",
+   "default": "1 / (required) / (required)"
+  },
+  {
+   "key": "policy.min_pipeline_version",
+   "default": "(none)"
+  },
+  {
+   "key": "policy.support.contact",
+   "default": "(none)"
+  },
+  {
+   "key": "policy.lanes.{asr_remote,asr_cloud,llm,calendar,drive}",
+   "default": "allow (personal) / deny (company, when missing)"
+  },
+  {
+   "key": "policy.approvals.{llm,asr_cloud,calendar,drive}",
+   "default": "(none)"
+  },
+  {
+   "key": "policy.local_only.default / locked",
+   "default": "false / false"
+  },
+  {
+   "key": "policy.recording.enabled",
+   "default": "true"
+  },
+  {
+   "key": "policy.asr.allowed_engines / allowed_hosts",
+   "default": "(no restriction) personal / empty list company"
+  },
+  {
+   "key": "policy.asr.allow_foreign / daily_audio_minutes_cap / send_vocab",
+   "default": "false / (none) / personal true, company server true and cloud false"
+  },
+  {
+   "key": "policy.asr.org_consents",
+   "default": "[]"
+  },
+  {
+   "key": "policy.archive.allowed_roots / local_roots",
+   "default": "(no restriction) personal / empty company"
+  },
+  {
+   "key": "policy.llm.claude_bin_pin / child_env",
+   "default": "(none) / {}"
+  },
+  {
+   "key": "policy.runtime.root",
+   "default": "(none)"
+  },
+  {
+   "key": "policy.defaults / enforced",
+   "default": "{} / company baseline {LOG_CONTENT:0, ASR_ALLOW_DOWNLOAD:0, MIC_MUTE_GATE:on, NOTIFY_RECORDING:1}"
+  },
+  {
+   "key": "policy.ext",
+   "default": "{}"
+  },
+  {
+   "key": "asr-server.json: listen / tls_cert / tls_key / secrets_dir",
+   "default": "127.0.0.1:8443 / (none) / (none) / /Library/Application Support/MeetingCapture-asr"
+  },
+  {
+   "key": "asr-server.json: backend",
+   "default": "whisper"
+  },
+  {
+   "key": "asr-server.json: max_queue / max_wait_s / per_token_concurrency / per_token_audio_s_per_day / per_token_rpm",
+   "default": "64 / 45 / 2 / 43200 / 120"
+  },
+  {
+   "key": "asr-server.json: token_ttl_days / enroll_code_ttl_s",
+   "default": "90 / 600"
+  },
+  {
+   "key": "asr-server.json: metadata_log_days",
+   "default": "400"
+  }
+ ]
+}

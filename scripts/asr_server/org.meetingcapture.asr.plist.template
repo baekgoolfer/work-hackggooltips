@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchDaemon of the mcap-asr/1 server. Rendered by scripts/asr_server/install_server.sh, which replaces the
+  placeholders written between two @ signs: PYTHON, PROJECT_DIR, CONFIG, SERVICE_USER, SERVICE_GROUP, HOME_DIR, LOG_DIR.
+  Regenerate it with the script instead of editing it.
+
+  The daemon runs as its own user (no login keychain: the token table, the TLS key and any vendor key are 0600 files of that user, the
+  documented server-tier exception to the Keychain rule). Core dumps are off (a crash must not write audio or text to disk) and the
+  umask is 077. HF_HUB_OFFLINE: the server never downloads a model. stdout and stderr go to one log file in the 0700 log directory:
+  the server only writes content-free lines there (quarterly check: python -m mcap.asr_server audit).
+
+  The code the daemon runs must not be changeable by the service user, and neither may what it imports. `python -m` puts the working
+  directory first on sys.path, and the user's home is a directory that user can write: a file such as ssl.py or json.py planted there
+  would be imported before the standard library at every start. So the working directory is / (only root writes there),
+  PYTHONSAFEPATH=1 keeps the working directory off sys.path altogether (Python 3.11 and later; an older Python ignores it and relies on
+  the working directory), and PYTHONNOUSERSITE=1 keeps the user's site-packages (and its .pth files, which run code) out. A command line
+  flag (-P, -s) would do the same but an older Python refuses -P and then the daemon would never start; the environment cannot be
+  refused. HOME stays the service home: it is only data (the model cache) there.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>org.meetingcapture.asr</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>@PYTHON@</string>
+		<string>-m</string>
+		<string>mcap.asr_server</string>
+		<string>--config</string>
+		<string>@CONFIG@</string>
+		<string>serve</string>
+	</array>
+	<key>UserName</key>
+	<string>@SERVICE_USER@</string>
+	<key>GroupName</key>
+	<string>@SERVICE_GROUP@</string>
+	<key>WorkingDirectory</key>
+	<string>/</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>ThrottleInterval</key>
+	<integer>30</integer>
+	<key>ProcessType</key>
+	<string>Interactive</string>
+	<key>Umask</key>
+	<integer>63</integer>
+	<key>SoftResourceLimits</key>
+	<dict>
+		<key>Core</key>
+		<integer>0</integer>
+	</dict>
+	<key>HardResourceLimits</key>
+	<dict>
+		<key>Core</key>
+		<integer>0</integer>
+	</dict>
+	<key>StandardOutPath</key>
+	<string>@LOG_DIR@/server.log</string>
+	<key>StandardErrorPath</key>
+	<string>@LOG_DIR@/server.log</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PYTHONPATH</key>
+		<string>@PROJECT_DIR@/pipeline</string>
+		<key>PYTHONDONTWRITEBYTECODE</key>
+		<string>1</string>
+		<key>PYTHONSAFEPATH</key>
+		<string>1</string>
+		<key>PYTHONNOUSERSITE</key>
+		<string>1</string>
+		<key>HF_HUB_OFFLINE</key>
+		<string>1</string>
+		<key>HOME</key>
+		<string>@HOME_DIR@</string>
+		<key>MCAP_ASR_SERVER_CONFIG</key>
+		<string>@CONFIG@</string>
+		<key>PATH</key>
+		<string>/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>LANG</key>
+		<string>en_US.UTF-8</string>
+	</dict>
+</dict>
+</plist>

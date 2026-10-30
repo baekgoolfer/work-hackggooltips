@@ -1,0 +1,91 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-16",
+    "note": "Written from the documentation of the Azure AI Speech fast transcription REST API (api-version 2025-10-15) and the design appendix, NOT recorded from the service. Field names, units and the shape of the error answer are unverified until the first live call (SPEC 18). Replace this file with a recorded answer to a synthetic TTS clip of the owner's own voice then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 200 answer of 12.4 s of Korean followed by English: offsetMilliseconds / durationMilliseconds"
+  },
+  "chunk_s": 12.4,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8"
+  },
+  "body": {
+    "durationMilliseconds": 12400,
+    "combinedPhrases": [
+      {
+        "channel": 0,
+        "text": "안녕하세요 오늘은 액미 AcmeScan-CXR 510(k) 제출 일정을 논의하겠습니다. Let's start with the FDA pre-submission timeline."
+      }
+    ],
+    "phrases": [
+      {
+        "channel": 0,
+        "offsetMilliseconds": 240,
+        "durationMilliseconds": 5120,
+        "text": "안녕하세요 오늘은 액미 AcmeScan-CXR 510(k) 제출 일정을 논의하겠습니다.",
+        "words": [
+          {
+            "text": "안녕하세요",
+            "offsetMilliseconds": 240,
+            "durationMilliseconds": 800
+          },
+          {
+            "text": "오늘은",
+            "offsetMilliseconds": 1100,
+            "durationMilliseconds": 520
+          },
+          {
+            "text": "액미",
+            "offsetMilliseconds": 1700,
+            "durationMilliseconds": 400
+          },
+          {
+            "text": "AcmeScan-CXR",
+            "offsetMilliseconds": 2200,
+            "durationMilliseconds": 900
+          }
+        ],
+        "locale": "ko-KR",
+        "confidence": 0.91
+      },
+      {
+        "channel": 0,
+        "offsetMilliseconds": 6000,
+        "durationMilliseconds": 5800,
+        "text": "Let's start with the FDA pre-submission timeline.",
+        "words": [
+          {
+            "text": "Let's",
+            "offsetMilliseconds": 6000,
+            "durationMilliseconds": 300
+          },
+          {
+            "text": "start",
+            "offsetMilliseconds": 6350,
+            "durationMilliseconds": 380
+          },
+          {
+            "text": "with",
+            "offsetMilliseconds": 6800,
+            "durationMilliseconds": 200
+          },
+          {
+            "text": "the",
+            "offsetMilliseconds": 7050,
+            "durationMilliseconds": 120
+          },
+          {
+            "text": "FDA",
+            "offsetMilliseconds": 7200,
+            "durationMilliseconds": 500
+          }
+        ],
+        "locale": "en-US",
+        "confidence": 0.95
+      }
+    ]
+  }
+}

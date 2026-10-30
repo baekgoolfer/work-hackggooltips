@@ -1,0 +1,74 @@
+# macOS, editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build output: the app, the bench kit, packages made by `make pkg`
+build/
+*.app/
+*.pkg
+*.dmg
+
+# Developer scratch space, agent working folders and local benchmark data (never published)
+benchmarks/
+.scratch/
+.claude/
+graphify-out/
+
+# Recordings, transcripts and meeting data: NEVER commit these. Real meetings contain other people's voices and words.
+# Test fixtures must be synthetic (see CONTRIBUTING.md).
+*.wav
+*.m4a
+*.caf
+*.aac
+*.mp3
+*.flac
+*.ogg
+*.opus
+*.mp4
+*.mov
+/sessions/
+/transcripts/
+/recordings/
+/meetings/
+
+# Your own settings, usage records and logs (the example file config/config.env.example IS tracked)
+config/config.env
+config.env
+# An organisation policy file and its marker belong to one machine, never to the repository (config/policy.example.json IS tracked)
+policy.json
+policy.required
+usage.jsonl
+asr-usage.jsonl
+overage.json
+asr-consent.json
+live-tested.confirmed
+*.log
+logs/
+
+# ASR bench kit artifacts (only created if setup_bench_env.sh runs from an unpacked kit; it refuses to run from this
+# repository, but a stray copy of these must never be committed): venv, model cache, env file, results, kit tarball
+/support/
+/hf/
+/bench.env
+/BENCH_KIT
+bench-kit.tar.gz
+bench-results.tar.gz
+
+# Secrets and signing material (scripts/make_signing_identity.sh --export-only writes a private key): never commit
+.env
+.env.*
+secrets/
+*.secret
+*.p8
+*.p12
+*.pfx
+*.pem
+*.key

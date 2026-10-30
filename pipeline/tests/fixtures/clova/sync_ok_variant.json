@@ -1,0 +1,55 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-20",
+    "note": "Written from the public documentation of the NAVER CLOVA Speech long-sentence API (local file upload: POST /recognizer/upload, https://api.ncloud-docs.com/docs/ai-application-service-clovaspeech-longsentence-local; request fields of the upload example and the Object Storage page for the response fields), NOT recorded from the service. The documentation does not describe the answer of a SYNC call beyond a sample whose JSON has syntax errors: field names, units and the shape of every answer below are unverified until the first live call by the owner. Replace these files with recorded answers to a synthetic TTS clip then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 200 answer the parser must take defensively: times as numeric strings, only speaker.label, a segment without a time, a label that is not a plain token, an unsorted pair"
+  },
+  "block_s": 30.0,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "result": "SUCCEEDED",
+    "message": "Succeeded",
+    "segments": [
+      {
+        "start": "8000",
+        "end": "12500",
+        "text": "  second   sentence\n  of the block ",
+        "confidence": 0.7,
+        "speaker": {
+          "label": "2",
+          "name": "B"
+        }
+      },
+      {
+        "start": 1000.0,
+        "end": 6000,
+        "text": "first sentence of the block",
+        "confidence": 1.7,
+        "diarization": {
+          "label": "<script>"
+        }
+      },
+      {
+        "text": "a sentence without any time"
+      },
+      {
+        "start": 20000,
+        "end": 19000,
+        "text": "an end before its start",
+        "confidence": "high"
+      },
+      {
+        "start": 25000,
+        "end": 31000,
+        "text": "   "
+      },
+      "not a segment"
+    ]
+  }
+}

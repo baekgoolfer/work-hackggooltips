@@ -1,0 +1,22 @@
+{
+  "listen": "127.0.0.1:8443",
+  "tls_cert": "",
+  "tls_key": "",
+  "secrets_dir": "/Library/Application Support/MeetingCapture-asr",
+  "log_dir": "/Library/Logs/MeetingCapture-asr",
+  "backend": "whisper",
+  "model": "",
+  "backend_options": {},
+  "max_queue": 64,
+  "max_wait_s": 45,
+  "per_token_concurrency": 2,
+  "per_token_audio_s_per_day": 43200,
+  "per_token_rpm": 120,
+  "token_ttl_days": 90,
+  "enroll_code_ttl_s": 600,
+  "metadata_log_days": 400,
+  "initial_service_s": 4.0,
+  "ext": {
+    "notes": "Copy to <secrets_dir>/asr-server.json (owner mcap-asr, not writable by others). Every key shown has its default; delete what you do not change. A non-loopback listen address needs tls_cert and tls_key (a loopback bind behind a TLS terminator may stay plaintext). tls_key must be 0600 and owned by mcap-asr. backend is an engine id of asr_engines.REGISTRY: whisper (local MLX model, the default) or, only after the owner approves it, a relay backend such as azure. model empty = mlx-community/whisper-large-v3-mlx (the model is never downloaded by the server: put it in the Hugging Face cache of the service user first). Keys must stay in this file's set: an unknown key refuses to start."
+  }
+}

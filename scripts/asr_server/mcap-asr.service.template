@@ -1,0 +1,73 @@
+# systemd unit of the mcap-asr/1 server on a Linux host (docs/ASR_SERVER_LINUX.md).
+# Rendered by scripts/asr_server/install_server_linux.sh, which replaces the placeholders written between two @ signs: PYTHON, PROJECT_DIR,
+# CONFIG, SERVICE_USER, SERVICE_GROUP, HOME_DIR, SUPPORT_DIR, LOG_DIR, and one line that stands for the IPAddressAllow= lines. Regenerate it
+# with the script instead of editing it; local changes belong in a drop-in (systemctl edit mcap-asr).
+#
+# Runs as its own unprivileged user, never as root, with no capabilities (so the port is 1024 or higher). The token table, the TLS key and
+# the enrollment codes are 0600 files of that user (the documented server-tier exception to the Keychain rule). Core dumps are off
+# (a crash must not write audio or text to disk) and the umask is 077. HF_HUB_OFFLINE: the server never downloads a model; put it into the
+# Hugging Face cache of the service user with `python -m mcap.asr_faster_whisper fetch --yes`, once, by hand.
+#
+# The code the service runs must not be changeable by the service user, and neither may what it imports: the project, the venv and the config
+# belong to root. `python -m` puts the working directory first on sys.path, so the working directory is / (only root writes there),
+# PYTHONSAFEPATH=1 keeps it off sys.path altogether (Python 3.11 and later), and PYTHONNOUSERSITE=1 keeps the user's site-packages (and its
+# .pth files, which run code) out. HOME is the service home: data only (the model cache).
+#
+# The network: the server only ever answers connections, it never starts one (the model is local), so everything is denied except loopback
+# and the networks the installer was given with --allow-from (the VPN subnet). That is the second line behind the bind address and the
+# firewall, not a replacement for either. NOT set on purpose: PrivateDevices and DevicePolicy (the NVIDIA device files must stay reachable;
+# they are world-accessible on the usual drivers), MemoryDenyWriteExecute (CUDA and CTranslate2 need executable memory).
+# /dev/nvidia-uvm must exist before this service starts (nvidia-persistenced, or nvidia-modprobe at boot): with NoNewPrivileges the service
+# cannot load it itself, and CTranslate2 then sees no GPU.
+[Unit]
+Description=Catch Everything ASR server (mcap-asr/1, faster-whisper)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=@SERVICE_USER@
+Group=@SERVICE_GROUP@
+WorkingDirectory=/
+ExecStart=@PYTHON@ -m mcap.asr_server --config @CONFIG@ serve
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=30
+UMask=0077
+LimitCORE=0
+Environment=PYTHONPATH=@PROJECT_DIR@/pipeline
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONSAFEPATH=1
+Environment=PYTHONNOUSERSITE=1
+Environment=HF_HUB_OFFLINE=1
+Environment=HOME=@HOME_DIR@
+Environment=MCAP_ASR_SERVER_CONFIG=@CONFIG@
+Environment=LANG=C.UTF-8
+Environment=PATH=/usr/bin:/bin
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ReadWritePaths=@SUPPORT_DIR@ @LOG_DIR@
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+
+IPAddressDeny=any
+@IP_ALLOW_LINES@
+
+[Install]
+WantedBy=multi-user.target

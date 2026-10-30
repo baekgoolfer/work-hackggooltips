@@ -1,0 +1,5 @@
+{
+ "_fixture": "DOCUMENT-DERIVED FIXTURE, not recorded from a real account: the shape follows Google's public reference (Calendar API events.list / Events resource, OAuth 2.0 for installed apps). Names, addresses and ids are invented.",
+ "error": "invalid_grant",
+ "error_description": "Token has been expired or revoked."
+}

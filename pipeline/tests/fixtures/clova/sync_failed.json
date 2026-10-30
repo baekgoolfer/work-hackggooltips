@@ -1,0 +1,19 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-20",
+    "note": "Written from the public documentation of the NAVER CLOVA Speech long-sentence API (local file upload: POST /recognizer/upload, https://api.ncloud-docs.com/docs/ai-application-service-clovaspeech-longsentence-local; request fields of the upload example and the Object Storage page for the response fields), NOT recorded from the service. The documentation does not describe the answer of a SYNC call beyond a sample whose JSON has syntax errors: field names, units and the shape of every answer below are unverified until the first live call by the owner. Replace these files with recorded answers to a synthetic TTS clip then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 200 answer whose result is not a completion: the service did not finish the job (never an empty transcript)"
+  },
+  "block_s": 20.0,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "result": "FAILED",
+    "message": "ZZCANARY-the patient Kim Minsu has chest pain"
+  }
+}

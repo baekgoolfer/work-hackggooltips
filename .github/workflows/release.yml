@@ -1,0 +1,90 @@
+# Build the release assets when a tag v* is pushed and open a DRAFT release with them. No secret is used: the only credential is the
+# built-in GITHUB_TOKEN, and only the publish job gets write access (contents: write), the job that runs the build scripts does not.
+#
+# No notarization, no Developer ID: the app zip is signed ad-hoc and the release notes say so, with the Gatekeeper steps.
+# The release stays a draft until a maintainer reads the notes and the assets and presses Publish (docs/RELEASING.md).
+# Run it by hand (Actions > Release > Run workflow) to test the build without a tag: the assets are kept as a workflow artifact, nothing is published.
+#
+# Every third-party action is pinned to a full commit SHA (the comment names the release).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the assets
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # scripts/release.sh runs the secret/path scan, checks tag = VERSION = __version__ and that LICENSE exists, builds the ad-hoc
+      # signed app zip (and verifies it after unpacking), the source tarball, SHA256SUMS and RELEASE_NOTES.md.
+      - name: Build and verify the assets
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+          # The bundle id of the build (Settings, Secrets and variables, Actions, Variables). Unset it is empty, which means the neutral default
+          # org.meetingcapture.app; scripts/release.sh hands it to build_app.sh and checks the signature of the zip against it.
+          MCAP_BUNDLE_ID: ${{ vars.MCAP_BUNDLE_ID }}
+          # The two names of the app, the same way: the human name (default "Catch Everything") and the file-safe short name (default CATE, the app folder and the
+          # name of the zip). scripts/bundle_id.sh holds the defaults and refuses a bad value before anything is built.
+          MCAP_APP_NAME: ${{ vars.MCAP_APP_NAME }}
+          MCAP_APP_SHORT_NAME: ${{ vars.MCAP_APP_SHORT_NAME }}
+        run: |
+          if [ "$REF_TYPE" = tag ]; then
+            bash scripts/release.sh --tag "$TAG" --out dist
+          else
+            bash scripts/release.sh --out dist
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-assets
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Create the draft release
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write # create the release and attach the assets; nothing else
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-assets
+          path: dist
+
+      - name: Check the files survived the transfer
+        run: cd dist && sha256sum -c SHA256SUMS
+
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          # the human name of the app, for the title (this job has no checkout: the default is the one of scripts/bundle_id.sh, a script test keeps them equal)
+          MCAP_APP_NAME: ${{ vars.MCAP_APP_NAME }}
+        run: |
+          flags=""
+          case "$TAG" in *-*) flags="--prerelease" ;; esac
+          gh release create "$TAG" dist/*.zip dist/*.tar.gz dist/SHA256SUMS \
+            --verify-tag --draft $flags \
+            --title "${MCAP_APP_NAME:-Catch Everything} $TAG" \
+            --notes-file dist/RELEASE_NOTES.md

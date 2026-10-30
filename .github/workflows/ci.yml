@@ -1,0 +1,121 @@
+# Build and test on every push to a branch and every pull request. No secret is used and the token can only read the repository.
+#
+# What this proves: the Swift app builds and its device-free self tests pass, the Python unit tests pass, the script tests pass, the
+# scripts parse, and no key-shaped string or personal path is in the tree. What it cannot prove: live recording, macOS permission
+# prompts and Zoom/Teams detection need a real Mac with real audio devices (docs/LIVE_TEST.md).
+#
+# Every third-party action is pinned to a full commit SHA (the comment names the release). Dependabot proposes updates (.github/dependabot.yml).
+name: CI
+
+on:
+  push:
+    branches: ["**"]    # every branch, whatever the default branch is called; tags are built by release.yml
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+env:
+  MC_CODESIGN_IDENTITY: "-"   # ad-hoc signature: no certificate, no keychain, no secret
+  HF_HUB_OFFLINE: "1"         # a test that tried to download a speech model would fail instead of fetching 3 GB
+
+jobs:
+  lint:
+    name: Lint and publish-safety scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: bash -n on every script
+        run: git ls-files -z -- 'scripts/*.sh' scripts/pkg/preinstall scripts/pkg/postinstall | xargs -0 -r -n 1 bash -n
+
+      # Not blocking yet: shellcheck has never been run on these scripts. Make it blocking (delete continue-on-error) once it is clean.
+      - name: shellcheck (warnings and errors)
+        continue-on-error: true
+        run: git ls-files -z -- 'scripts/*.sh' scripts/pkg/preinstall scripts/pkg/postinstall | xargs -0 -r shellcheck -x --severity=warning
+
+      - name: Scan for secrets and personal paths
+        run: bash scripts/release.sh --scan-only
+
+  swift:
+    name: Swift build and self tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-26 is the system the app was developed on. macos-15 shows whether the sources still compile with an older SDK
+        # (the app targets macOS 14.4; GitHub has deprecated the macos-14 image). Both are Apple silicon.
+        os: [macos-26, macos-15]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Toolchain
+        run: |
+          sw_vers
+          uname -m
+          xcode-select -p
+          swiftc --version
+          xcrun --sdk macosx --show-sdk-version
+          test "$(uname -m)" = arm64
+
+      - name: Build (ad-hoc signed)
+        run: make build
+
+      # selftest-detector, selftest-session, selftest-policy and selftest-capture --synthetic (the Makefile target runs all four)
+      - name: Swift self tests
+        run: make test-swift
+
+  python:
+    name: Python tests (${{ matrix.venv }} venv)
+    runs-on: macos-26
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # client = numpy and truststore only (pipeline/requirements.client.txt): tests that need the speech stack skip themselves.
+        # full   = the pinned production lock (pipeline/requirements.lock.txt), installed with --no-deps like scripts/setup_python.sh does.
+        venv: [client, full]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13" # the version the lock file was verified with
+
+      - name: Create the venv (no model is downloaded)
+        env:
+          VENV: ${{ matrix.venv }}
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          if [ "$VENV" = full ]; then req=pipeline/requirements.lock.txt; else req=pipeline/requirements.client.txt; fi
+          PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_NO_INPUT=1 "$RUNNER_TEMP/venv/bin/python" -m pip install --no-deps -r "$req"
+          "$RUNNER_TEMP/venv/bin/python" -c 'import sys, numpy; print(sys.version.split()[0], "numpy", numpy.__version__)'
+
+      - name: Python unit tests
+        run: make test-python PY="$RUNNER_TEMP/venv/bin/python"
+
+  scripts:
+    name: Script tests
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Hermetic: temp HOME, stubbed launchctl/security/codesign/notarytool, no download, no real install.
+      - name: Script tests
+        run: make test-scripts

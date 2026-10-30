@@ -1,0 +1,31 @@
+# Domain vocabulary for ASR (initial_prompt) and for meeting-note term normalisation.
+#
+# This is an EXAMPLE seed. Replace the "Example" blocks with the names your meetings use (your company, products, partners, people).
+# An installed copy is never overwritten by a later install: edit ~/Library/Application Support/MeetingCapture/vocabulary.txt.
+#
+# Format (one per line):
+#   Canonical
+#   Canonical = alias1 | alias2 | alias3      <- spellings the ASR often gets wrong (replaced only on an exact match)
+# Lines starting with '#' are comments. **Terms higher up have a higher priority** (the Whisper prompt is filled from the top
+# within its token budget, and the highest term goes last, closest to the audio).
+# To add a term, add one line to this file. Numbers, prices and dates do not belong here.
+# Order rule: put the proper nouns that get misrecognised often (company, product, partner, institution names) above the
+# abbreviations Whisper already knows well (API, KPI ...).
+# 형식은 위와 같습니다. 용어를 추가하려면 이 파일에 한 줄만 더하면 됩니다. 위쪽 용어일수록 우선순위가 높습니다.
+
+# --- Example: your company and products (replace these lines) ---
+ExampleCorp = Example Corp | Egzample Corp
+ExampleCorp.ai
+ExampleScan
+ExampleScan-CXR
+ExampleScan-CT
+
+# --- Example: partners, competitors, institutions (replace these lines) ---
+Fabrikam-Health
+Contoso-Labs
+Example Radiology
+
+# --- General abbreviations (Whisper knows these fairly well; replace these lines) ---
+API
+KPI
+OKR

@@ -1,0 +1,14 @@
+# Secret scanner configuration (gitleaks). Nothing in this repository is a real secret. The allowlisted file holds two THROW-AWAY test
+# certificates with their private keys (subjects asr-a.test and asr-b.test, valid until 2120): they protect nothing and exist so that the
+# TLS tests need no openssl at run time. The key-shaped strings elsewhere in the tests (sk-ant-..., JWT and PEM canaries) are short fake
+# values that prove the redaction code works.
+title = "meeting-capture"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "throw-away TLS test keys of the test suite"
+paths = [
+  '''pipeline/tests/net_guard_support\.py''',
+]

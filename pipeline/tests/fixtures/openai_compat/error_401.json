@@ -1,0 +1,21 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-20",
+    "note": "Written from the public API reference of the OpenAI audio transcription endpoint (POST /v1/audio/transcriptions, response_format verbose_json: task, language, duration, text, segments with id, seek, start, end, text, tokens, temperature, avg_logprob, compression_ratio, no_speech_prob), NOT recorded from any server. Servers that copy the shape (faster-whisper servers, gateways) differ in details: the language is an English name or a code, optional fields may be missing. Unverified until a first live call; replace with a recorded answer then and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 401 in the OpenAI error shape"
+  },
+  "status": 401,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "error": {
+      "message": "ZZCANARY-the patient Kim Minsu has chest pain",
+      "type": "invalid_request_error",
+      "code": "invalid_api_key"
+    }
+  }
+}

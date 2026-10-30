@@ -1,0 +1,638 @@
+{
+ "schema": 1,
+ "_about": "Shared by pipeline/tests/test_settings_parity.py and the Swift self test (app/Sources/SettingsSelfTests.swift). destinations: the host, port and path of a cloud engine's address (asr_providers.split_base; the consent and the Keychain account of its API key are bound to host:port). env_parse: text both parsers (config.py parse_env_text, Config.swift parseEnvText) read the same way. writer: the exact bytes ConfigEnvEditor writes for a change (null = remove the key); the Python test checks that parse_env_text reads the result as the change says. reads_as: a text stored in config.env for a key of the window, what the window shows for it (`shown`; `problem` = it also says the text is not understood) and what the Python parser makes of it (`python`: the value (for CLAUDE_AUTH the mode word), `no-claude-call` = apikey.mode_problem says no Claude call is made, `refuses-to-run` = load_config raises ValueError, `limit-N` = usage._limit of the budget). A typo does not always read as the default: the window must show what the code reads. model_names: ASR_OPENAI_COMPAT_MODEL texts: `python` = asr_openai_compat._MODEL accepts it ([\\x21-\\x7e]{1,100}), `window` = the window accepts it (never a text Python refuses; it also refuses a quote at either end, a leading # and a KEY=VALUE look-alike, which the config.env writer cannot store).",
+ "destinations": [
+  {
+   "engine": "clova",
+   "url": "https://clovaspeech-gw.ncloud.com/external/v1/abc123/def456789",
+   "host": "clovaspeech-gw.ncloud.com",
+   "port": 443,
+   "path": "/external/v1/abc123/def456789"
+  },
+  {
+   "engine": "clova",
+   "url": "https://clovaspeech-gw.ncloud.com/external/v1/abc/def/",
+   "host": "clovaspeech-gw.ncloud.com",
+   "port": 443,
+   "path": "/external/v1/abc/def"
+  },
+  {
+   "engine": "clova",
+   "url": "HTTPS://ClovaSpeech-GW.NCloud.com/x",
+   "host": "clovaspeech-gw.ncloud.com",
+   "port": 443,
+   "path": "/x"
+  },
+  {
+   "engine": "clova",
+   "url": "https://gw.ncloud.com:8443/external/v1/abc/def",
+   "host": "gw.ncloud.com",
+   "port": 8443,
+   "path": "/external/v1/abc/def"
+  },
+  {
+   "engine": "clova",
+   "url": "https://gw.fin-ncloud.com/a",
+   "host": "gw.fin-ncloud.com",
+   "port": 443,
+   "path": "/a"
+  },
+  {
+   "engine": "clova",
+   "url": "https://gw.gov-ncloud.com/a",
+   "host": "gw.gov-ncloud.com",
+   "port": 443,
+   "path": "/a"
+  },
+  {
+   "engine": "clova",
+   "url": "https://ncloud.com/x",
+   "error": "bad-host"
+  },
+  {
+   "engine": "clova",
+   "url": "https://example.com/x",
+   "error": "bad-host"
+  },
+  {
+   "engine": "clova",
+   "url": "http://gw.ncloud.com/x",
+   "error": "bad-host"
+  },
+  {
+   "engine": "clova",
+   "url": "  https://gw.ncloud.com/x  ",
+   "host": "gw.ncloud.com",
+   "port": 443,
+   "path": "/x"
+  },
+  {
+   "engine": "clova",
+   "url": "",
+   "error": "not-configured"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.openai.com/v1",
+   "host": "api.openai.com",
+   "port": 443,
+   "path": "/v1"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://llm.example.org",
+   "host": "llm.example.org",
+   "port": 443,
+   "path": ""
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com:443/v1",
+   "host": "api.example.com",
+   "port": 443,
+   "path": "/v1"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com:/v1",
+   "host": "api.example.com",
+   "port": 443,
+   "path": "/v1"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com:8080/v1/",
+   "host": "api.example.com",
+   "port": 8080,
+   "path": "/v1"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://203.0.113.5/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://[::1]/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://user:pw@api.example.com/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com/v1?key=1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com/v1#frag",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com:0/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com:65536/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com:abc/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://localhost/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com./v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://my_server.example.com/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://-a.example.com/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com/a b",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com/a/../b",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com//v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://서버.example.com/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://api.example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "host": "api.example.com",
+   "port": 443,
+   "path": "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "ftp://api.example.com/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "api.example.com/v1",
+   "error": "bad-host"
+  },
+  {
+   "engine": "openai-compat",
+   "url": "https://API.Example.COM/V1",
+   "host": "api.example.com",
+   "port": 443,
+   "path": "/V1"
+  }
+ ],
+ "env_parse": [
+  {
+   "text": "A=1\n",
+   "expect": {
+    "A": "1"
+   }
+  },
+  {
+   "text": "  B = two  # comment\n",
+   "expect": {
+    "B": "two"
+   }
+  },
+  {
+   "text": "C=\"quoted value\"\nD='single'\n",
+   "expect": {
+    "C": "quoted value",
+    "D": "single"
+   }
+  },
+  {
+   "text": "E=a#b\n",
+   "expect": {
+    "E": "a#b"
+   }
+  },
+  {
+   "text": "F=~/My Drive/Meetings\n",
+   "expect": {
+    "F": "~/My Drive/Meetings"
+   }
+  },
+  {
+   "text": "G=x=y\n",
+   "expect": {
+    "G": "x=y"
+   }
+  },
+  {
+   "text": "# comment\n\nH=1\n",
+   "expect": {
+    "H": "1"
+   }
+  },
+  {
+   "text": "I=\n",
+   "expect": {
+    "I": ""
+   }
+  },
+  {
+   "text": "J=1\nJ=2\n",
+   "expect": {
+    "J": "2"
+   }
+  },
+  {
+   "text": "K=1\r\nL=2\r\n",
+   "expect": {
+    "K": "1",
+    "L": "2"
+   }
+  },
+  {
+   "text": "M= \"in quotes\" # note\n",
+   "expect": {
+    "M": "in quotes"
+   }
+  },
+  {
+   "text": "N=1",
+   "expect": {
+    "N": "1"
+   }
+  },
+  {
+   "text": "just text\nO=1\n",
+   "expect": {
+    "O": "1"
+   }
+  },
+  {
+   "text": "P=a b  c\n",
+   "expect": {
+    "P": "a b  c"
+   }
+  },
+  {
+   "text": "Q=it's fine\n",
+   "expect": {
+    "Q": "it's fine"
+   }
+  },
+  {
+   "text": "R= # only a comment\n",
+   "expect": {
+    "R": ""
+   }
+  }
+ ],
+ "writer": [
+  {
+   "name": "update keeps neighbours",
+   "text": "# top\nUI_LANGUAGE=en\nOTHER=keep   # note\n",
+   "changes": {
+    "UI_LANGUAGE": "ko"
+   },
+   "result": "# top\nUI_LANGUAGE=ko\nOTHER=keep   # note\n"
+  },
+  {
+   "name": "update keeps blanks and the trailing comment",
+   "text": "SELF_NAME =  Me   # label\n",
+   "changes": {
+    "SELF_NAME": "Sam"
+   },
+   "result": "SELF_NAME =  Sam   # label\n"
+  },
+  {
+   "name": "double quotes stay",
+   "text": "ARCHIVE_DIR=\"~/My Meetings\"\n",
+   "changes": {
+    "ARCHIVE_DIR": "~/Other Meetings"
+   },
+   "result": "ARCHIVE_DIR=\"~/Other Meetings\"\n"
+  },
+  {
+   "name": "a value with the quote of the line is written bare",
+   "text": "SELF_NAME='Me'\n",
+   "changes": {
+    "SELF_NAME": "Sam's"
+   },
+   "result": "SELF_NAME=Sam's\n"
+  },
+  {
+   "name": "insert at the end under one header",
+   "text": "A=1\n",
+   "changes": {
+    "NOTE_MODEL": "sonnet"
+   },
+   "result": "A=1\n\n# Added by the Settings window\nNOTE_MODEL=sonnet\n"
+  },
+  {
+   "name": "insert into an empty file",
+   "text": "",
+   "changes": {
+    "UI_LANGUAGE": "ko"
+   },
+   "result": "# Added by the Settings window\nUI_LANGUAGE=ko\n"
+  },
+  {
+   "name": "insert after a last line without a newline",
+   "text": "A=1",
+   "changes": {
+    "B": "2"
+   },
+   "result": "A=1\n\n# Added by the Settings window\nB=2\n"
+  },
+  {
+   "name": "the header is reused",
+   "text": "A=1\n\n# Added by the Settings window\nB=2\n",
+   "changes": {
+    "C": "3"
+   },
+   "result": "A=1\n\n# Added by the Settings window\nB=2\nC=3\n"
+  },
+  {
+   "name": "remove takes every line of the key",
+   "text": "A=1\nB=2\nA=3\n",
+   "changes": {
+    "A": null
+   },
+   "result": "B=2\n"
+  },
+  {
+   "name": "only the last duplicate is rewritten",
+   "text": "A=1\nA=2\n",
+   "changes": {
+    "A": "9"
+   },
+   "result": "A=1\nA=9\n"
+  },
+  {
+   "name": "CRLF, comments and unknown keys stay",
+   "text": "# c\r\nX_UNKNOWN=zz\r\nUI_LANGUAGE=en\r\n",
+   "changes": {
+    "UI_LANGUAGE": "ko"
+   },
+   "result": "# c\r\nX_UNKNOWN=zz\r\nUI_LANGUAGE=ko\r\n"
+  },
+  {
+   "name": "CRLF insert",
+   "text": "A=1\r\n",
+   "changes": {
+    "B": "2"
+   },
+   "result": "A=1\r\n\r\n# Added by the Settings window\r\nB=2\r\n"
+  },
+  {
+   "name": "a commented key is not a definition",
+   "text": "# NOTE_MODEL=opus\n",
+   "changes": {
+    "NOTE_MODEL": "sonnet"
+   },
+   "result": "# NOTE_MODEL=opus\n\n# Added by the Settings window\nNOTE_MODEL=sonnet\n"
+  },
+  {
+   "name": "an empty value before a comment gets a blank before the comment",
+   "text": "EXTRA_MEETING_APPS=  # none\n",
+   "changes": {
+    "EXTRA_MEETING_APPS": "com.example.talk=Example Talk"
+   },
+   "result": "EXTRA_MEETING_APPS=  com.example.talk=Example Talk # none\n"
+  },
+  {
+   "name": "an empty list is a value",
+   "text": "ENABLED_PLATFORMS=zoom,teams\n",
+   "changes": {
+    "ENABLED_PLATFORMS": ""
+   },
+   "result": "ENABLED_PLATFORMS=\n"
+  },
+  {
+   "name": "indentation and blank lines stay",
+   "text": "\n  UI_LANGUAGE = en\n\n",
+   "changes": {
+    "UI_LANGUAGE": "ko"
+   },
+   "result": "\n  UI_LANGUAGE = ko\n\n"
+  },
+  {
+   "name": "two changes at once",
+   "text": "A=1\nB=2\n",
+   "changes": {
+    "A": null,
+    "B": "3",
+    "C": "4"
+   },
+   "result": "B=3\n\n# Added by the Settings window\nC=4\n"
+  }
+ ],
+ "reads_as": [
+  {
+   "key": "LOCAL_ONLY_DEFAULT",
+   "text": "ture",
+   "shown": "1",
+   "problem": true,
+   "python": "1"
+  },
+  {
+   "key": "LOCAL_ONLY_DEFAULT",
+   "text": "2",
+   "shown": "1",
+   "problem": true,
+   "python": "1"
+  },
+  {
+   "key": "LOG_CONTENT",
+   "text": "ofn",
+   "shown": "0",
+   "problem": true,
+   "python": "0"
+  },
+  {
+   "key": "LOG_CONTENT",
+   "text": "maybe",
+   "shown": "0",
+   "problem": true,
+   "python": "0"
+  },
+  {
+   "key": "CLAUDE_AUTH",
+   "text": "apii",
+   "shown": "subscription",
+   "problem": true,
+   "python": "no-claude-call"
+  },
+  {
+   "key": "CLAUDE_AUTH",
+   "text": "  subscription ",
+   "shown": "subscription",
+   "problem": false,
+   "python": "subscription"
+  },
+  {
+   "key": "ASR_STRATEGY",
+   "text": "triple",
+   "shown": "single",
+   "problem": true,
+   "python": "single"
+  },
+  {
+   "key": "ASR_STRATEGY",
+   "text": "DUAL",
+   "shown": "dual",
+   "problem": false,
+   "python": "dual"
+  },
+  {
+   "key": "CLAUDE_DAILY_BUDGET_USD",
+   "text": "$5",
+   "shown": null,
+   "problem": true,
+   "python": "refuses-to-run"
+  },
+  {
+   "key": "CLAUDE_MEETING_BUDGET_USD",
+   "text": "two",
+   "shown": null,
+   "problem": true,
+   "python": "refuses-to-run"
+  },
+  {
+   "key": "CLAUDE_DAILY_BUDGET_USD",
+   "text": "5,5",
+   "shown": null,
+   "problem": true,
+   "python": "refuses-to-run"
+  },
+  {
+   "key": "CLAUDE_DAILY_BUDGET_USD",
+   "text": "-1",
+   "shown": "0",
+   "problem": false,
+   "python": "limit-0"
+  },
+  {
+   "key": "CLAUDE_DAILY_BUDGET_USD",
+   "text": "nan",
+   "shown": "0",
+   "problem": false,
+   "python": "limit-0"
+  },
+  {
+   "key": "CLAUDE_MEETING_BUDGET_USD",
+   "text": "1_000",
+   "shown": "1000",
+   "problem": false,
+   "python": "limit-1000"
+  },
+  {
+   "key": "CLAUDE_MEETING_BUDGET_USD",
+   "text": "2.50",
+   "shown": "2.5",
+   "problem": false,
+   "python": "limit-2.5"
+  }
+ ],
+ "model_names": [
+  {
+   "text": "whisper-1",
+   "python": true,
+   "window": true
+  },
+  {
+   "text": "Systran/faster-whisper-large-v3",
+   "python": true,
+   "window": true
+  },
+  {
+   "text": "openai/whisper-large-v3",
+   "python": true,
+   "window": true
+  },
+  {
+   "text": "whisper-large-v3:latest",
+   "python": true,
+   "window": true
+  },
+  {
+   "text": "a=b",
+   "python": true,
+   "window": true
+  },
+  {
+   "text": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+   "python": true,
+   "window": true
+  },
+  {
+   "text": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+   "python": false,
+   "window": false
+  },
+  {
+   "text": "my model",
+   "python": false,
+   "window": false
+  },
+  {
+   "text": "été",
+   "python": false,
+   "window": false
+  },
+  {
+   "text": "tab\tx",
+   "python": false,
+   "window": false
+  },
+  {
+   "text": "\"quoted\"",
+   "python": true,
+   "window": false
+  },
+  {
+   "text": "'x",
+   "python": true,
+   "window": false
+  },
+  {
+   "text": "#x",
+   "python": true,
+   "window": false
+  },
+  {
+   "text": "WHISPER=1",
+   "python": true,
+   "window": false
+  }
+ ]
+}

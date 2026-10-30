@@ -1,0 +1,25 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-16",
+    "note": "Written from the documentation of the Azure AI Speech fast transcription REST API (api-version 2025-10-15) and the design appendix, NOT recorded from the service. Field names, units and the shape of the error answer are unverified until the first live call (SPEC 18). Replace this file with a recorded answer to a synthetic TTS clip of the owner's own voice then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 200 answer for a chunk without speech: both lists present, nothing in them"
+  },
+  "chunk_s": 2.0,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "durationMilliseconds": 2000,
+    "combinedPhrases": [
+      {
+        "channel": 0,
+        "text": ""
+      }
+    ],
+    "phrases": []
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "revision": 2,
+  "min_pipeline_version": "0.2.0",
+  "lanes": {
+    "asr_remote": "allow"
+  }
+}

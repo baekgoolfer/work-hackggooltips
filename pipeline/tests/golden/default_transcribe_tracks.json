@@ -1,0 +1,759 @@
+{
+ "lid_auto": {
+  "transcript": {
+   "schema": 1,
+   "asr_model": "mlx-community/whisper-large-v3-mlx",
+   "languages": {
+    "mic": "ko",
+    "remote": "en"
+   },
+   "segments": [
+    {
+     "start": 0.9,
+     "end": 2.7,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "en",
+     "text": "아 알겠습니다",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 1.9,
+     "end": 6.9,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "ko",
+     "text": "Acme 파일럿 계약을 검토했습니다.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 7.0,
+     "end": 12.1,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "ko",
+     "text": "다음 주에 Pre-Sub 미팅을 잡겠습니다.",
+     "avg_logprob": -0.35,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 13.9,
+     "end": 17.9,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "en",
+     "text": "We reviewed the Acme pilot contract.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 18.0,
+     "end": 22.1,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "en",
+     "text": "Let us schedule the Pre-Sub meeting next week.",
+     "avg_logprob": -0.35,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 30.0,
+     "end": 36.0,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "en",
+     "text": "On a second listen this is what was said.",
+     "avg_logprob": -0.2,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 40.0,
+     "end": 47.0,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "ko",
+     "text": "다시 들어 보니 이렇게 말했습니다.",
+     "avg_logprob": -0.2,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 51.3,
+     "end": 54.0,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "ko",
+     "text": "FDA 심사 일정은 다음 달입니다.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 56.3,
+     "end": 58.0,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "en",
+     "text": "The FDA review is scheduled for next month.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    }
+   ],
+   "dropped": {
+    "mic": 1,
+    "remote": 2
+   },
+   "dropped_reasons": {
+    "mic": {
+     "strong_phantom": 1
+    },
+    "remote": {
+     "no-content": 1,
+     "strong_phantom": 1
+    }
+   },
+   "echo_suppressed": 0,
+   "echo_suppressed_reasons": {},
+   "aec": {
+    "applied": false,
+    "mode": "off",
+    "reason": "MIC_AEC=0"
+   },
+   "speech_seconds": {
+    "mic": 18.0,
+    "remote": 22.0,
+    "total": 40.0
+   },
+   "missing_tracks": [],
+   "stats": {
+    "mic": {
+     "duration_s": 63.0,
+     "vad": "energy",
+     "vad_info": {
+      "threshold_db": -51.3,
+      "seconds": 0.25
+     },
+     "regions": 4,
+     "speech_s": 18.0,
+     "language_mode": "auto",
+     "languages": [
+      "ko",
+      "en"
+     ],
+     "prompt_style": "frame+list",
+     "track_language": "ko",
+     "track_scores": {
+      "ko": 0.657,
+      "en": 0.343
+     },
+     "monolingual_fast_path": false,
+     "probes": 4,
+     "lid_regions": 4,
+     "weak_regions": 0,
+     "language_switches": 2,
+     "lid_s": 0.25,
+     "chunks": 3,
+     "asr_s": 0.25,
+     "prompt_retries": 1,
+     "retries_accepted": 1,
+     "segments": 4,
+     "dropped": 1,
+     "loops_collapsed": 0,
+     "words": 23,
+     "total_s": 1.75
+    },
+    "remote": {
+     "duration_s": 63.0,
+     "vad": "energy",
+     "vad_info": {
+      "threshold_db": -51.6,
+      "seconds": 0.25
+     },
+     "regions": 4,
+     "speech_s": 22.0,
+     "language_mode": "auto",
+     "languages": [
+      "ko",
+      "en"
+     ],
+     "prompt_style": "frame+list",
+     "track_language": "en",
+     "track_scores": {
+      "ko": 0.329,
+      "en": 0.671
+     },
+     "monolingual_fast_path": false,
+     "probes": 4,
+     "lid_regions": 4,
+     "weak_regions": 0,
+     "language_switches": 2,
+     "lid_s": 0.25,
+     "chunks": 4,
+     "asr_s": 0.25,
+     "prompt_retries": 1,
+     "retries_accepted": 1,
+     "segments": 5,
+     "dropped": 2,
+     "loops_collapsed": 1,
+     "words": 29,
+     "total_s": 1.75
+    }
+   }
+  },
+  "progress": [
+   "detecting speech mic",
+   "detecting language mic",
+   "transcribing mic 1/3",
+   "transcribing mic 2/3",
+   "transcribing mic 3/3",
+   "detecting speech remote",
+   "detecting language remote",
+   "transcribing remote 1/4",
+   "transcribing remote 2/4",
+   "transcribing remote 3/4",
+   "transcribing remote 4/4",
+   "checking echo"
+  ],
+  "engine_calls": [
+   [
+    169600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    105600,
+    "en",
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    105600,
+    "en",
+    null
+   ],
+   [
+    73600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    73600,
+    "en",
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    137600,
+    "en",
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    121600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    121600,
+    "ko",
+    null
+   ],
+   [
+    57600,
+    "en",
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ]
+  ],
+  "engine_lid_calls": [
+   4,
+   4
+  ],
+  "engine_loaded": 2,
+  "engine_released": 1
+ },
+ "no_lid_auto": {
+  "transcript": {
+   "schema": 1,
+   "asr_model": "mlx-community/whisper-large-v3-mlx",
+   "languages": {
+    "mic": null,
+    "remote": null
+   },
+   "segments": [
+    {
+     "start": 0.9,
+     "end": 2.7,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "",
+     "text": "아 알겠습니다",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 1.9,
+     "end": 6.9,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "",
+     "text": "We reviewed the Acme pilot contract.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 7.0,
+     "end": 12.1,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "",
+     "text": "Let us schedule the Pre-Sub meeting next week.",
+     "avg_logprob": -0.35,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 13.9,
+     "end": 17.9,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "",
+     "text": "We reviewed the Acme pilot contract.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 18.0,
+     "end": 22.1,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "",
+     "text": "Let us schedule the Pre-Sub meeting next week.",
+     "avg_logprob": -0.35,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 30.0,
+     "end": 36.0,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "",
+     "text": "On a second listen this is what was said.",
+     "avg_logprob": -0.2,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 40.0,
+     "end": 47.0,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "",
+     "text": "On a second listen this is what was said.",
+     "avg_logprob": -0.2,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 51.3,
+     "end": 54.0,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "",
+     "text": "The FDA review is scheduled for next month.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 56.3,
+     "end": 58.0,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "",
+     "text": "The FDA review is scheduled for next month.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    }
+   ],
+   "dropped": {
+    "mic": 1,
+    "remote": 2
+   },
+   "dropped_reasons": {
+    "mic": {
+     "strong_phantom": 1
+    },
+    "remote": {
+     "no-content": 1,
+     "strong_phantom": 1
+    }
+   },
+   "echo_suppressed": 0,
+   "echo_suppressed_reasons": {},
+   "aec": {
+    "applied": false,
+    "mode": "off",
+    "reason": "MIC_AEC=0"
+   },
+   "speech_seconds": {
+    "mic": 18.0,
+    "remote": 22.0,
+    "total": 40.0
+   },
+   "missing_tracks": [],
+   "stats": {
+    "mic": {
+     "duration_s": 63.0,
+     "vad": "energy",
+     "vad_info": {
+      "threshold_db": -51.3,
+      "seconds": 0.25
+     },
+     "regions": 4,
+     "speech_s": 18.0,
+     "language_mode": "auto",
+     "languages": [
+      "ko",
+      "en"
+     ],
+     "prompt_style": "frame+list",
+     "lid_s": 0.25,
+     "chunks": 3,
+     "asr_s": 0.25,
+     "prompt_retries": 1,
+     "retries_accepted": 1,
+     "segments": 4,
+     "dropped": 1,
+     "loops_collapsed": 0,
+     "words": 31,
+     "total_s": 1.75
+    },
+    "remote": {
+     "duration_s": 63.0,
+     "vad": "energy",
+     "vad_info": {
+      "threshold_db": -51.6,
+      "seconds": 0.25
+     },
+     "regions": 4,
+     "speech_s": 22.0,
+     "language_mode": "auto",
+     "languages": [
+      "ko",
+      "en"
+     ],
+     "prompt_style": "frame+list",
+     "lid_s": 0.25,
+     "chunks": 4,
+     "asr_s": 0.25,
+     "prompt_retries": 1,
+     "retries_accepted": 1,
+     "segments": 5,
+     "dropped": 2,
+     "loops_collapsed": 1,
+     "words": 33,
+     "total_s": 1.75
+    }
+   }
+  },
+  "progress": [
+   "detecting speech mic",
+   "transcribing mic 1/3",
+   "transcribing mic 2/3",
+   "transcribing mic 3/3",
+   "detecting speech remote",
+   "transcribing remote 1/4",
+   "transcribing remote 2/4",
+   "transcribing remote 3/4",
+   "transcribing remote 4/4",
+   "checking echo"
+  ],
+  "engine_calls": [
+   [
+    169600,
+    null,
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    105600,
+    null,
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    105600,
+    null,
+    null
+   ],
+   [
+    73600,
+    null,
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    73600,
+    null,
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    137600,
+    null,
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    121600,
+    null,
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    121600,
+    null,
+    null
+   ],
+   [
+    57600,
+    null,
+    "A medical AI meeting. Terms: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ]
+  ],
+  "engine_lid_calls": [],
+  "engine_loaded": 2,
+  "engine_released": 1
+ },
+ "forced_ko": {
+  "transcript": {
+   "schema": 1,
+   "asr_model": "mlx-community/whisper-large-v3-mlx",
+   "languages": {
+    "mic": "ko",
+    "remote": "ko"
+   },
+   "segments": [
+    {
+     "start": 0.9,
+     "end": 2.7,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "ko",
+     "text": "아 알겠습니다",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 1.9,
+     "end": 6.9,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "ko",
+     "text": "Acme 파일럿 계약을 검토했습니다.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 7.0,
+     "end": 12.1,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "ko",
+     "text": "다음 주에 Pre-Sub 미팅을 잡겠습니다.",
+     "avg_logprob": -0.35,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 13.9,
+     "end": 17.9,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "ko",
+     "text": "Acme 파일럿 계약을 검토했습니다.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 18.0,
+     "end": 22.1,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "ko",
+     "text": "다음 주에 Pre-Sub 미팅을 잡겠습니다.",
+     "avg_logprob": -0.35,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 30.0,
+     "end": 36.0,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "ko",
+     "text": "다시 들어 보니 이렇게 말했습니다.",
+     "avg_logprob": -0.2,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 40.0,
+     "end": 47.0,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "ko",
+     "text": "다시 들어 보니 이렇게 말했습니다.",
+     "avg_logprob": -0.2,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 51.3,
+     "end": 54.0,
+     "speaker": "Me",
+     "track": "mic",
+     "lang": "ko",
+     "text": "FDA 심사 일정은 다음 달입니다.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    },
+    {
+     "start": 56.3,
+     "end": 58.0,
+     "speaker": "Remote",
+     "track": "remote",
+     "lang": "ko",
+     "text": "FDA 심사 일정은 다음 달입니다.",
+     "avg_logprob": -0.3,
+     "no_speech_prob": 0.02
+    }
+   ],
+   "dropped": {
+    "mic": 1,
+    "remote": 2
+   },
+   "dropped_reasons": {
+    "mic": {
+     "strong_phantom": 1
+    },
+    "remote": {
+     "no-content": 1,
+     "strong_phantom": 1
+    }
+   },
+   "echo_suppressed": 0,
+   "echo_suppressed_reasons": {},
+   "aec": {
+    "applied": false,
+    "mode": "off",
+    "reason": "MIC_AEC=0"
+   },
+   "speech_seconds": {
+    "mic": 18.0,
+    "remote": 22.0,
+    "total": 40.0
+   },
+   "missing_tracks": [],
+   "stats": {
+    "mic": {
+     "duration_s": 63.0,
+     "vad": "energy",
+     "vad_info": {
+      "threshold_db": -51.3,
+      "seconds": 0.25
+     },
+     "regions": 4,
+     "speech_s": 18.0,
+     "language_mode": "ko",
+     "languages": [
+      "ko",
+      "en"
+     ],
+     "prompt_style": "frame+list",
+     "lid_s": 0.25,
+     "chunks": 3,
+     "asr_s": 0.25,
+     "prompt_retries": 1,
+     "retries_accepted": 1,
+     "segments": 4,
+     "dropped": 1,
+     "loops_collapsed": 0,
+     "words": 19,
+     "total_s": 1.75
+    },
+    "remote": {
+     "duration_s": 63.0,
+     "vad": "energy",
+     "vad_info": {
+      "threshold_db": -51.6,
+      "seconds": 0.25
+     },
+     "regions": 4,
+     "speech_s": 22.0,
+     "language_mode": "ko",
+     "languages": [
+      "ko",
+      "en"
+     ],
+     "prompt_style": "frame+list",
+     "lid_s": 0.25,
+     "chunks": 4,
+     "asr_s": 0.25,
+     "prompt_retries": 1,
+     "retries_accepted": 1,
+     "segments": 5,
+     "dropped": 2,
+     "loops_collapsed": 1,
+     "words": 21,
+     "total_s": 1.75
+    }
+   }
+  },
+  "progress": [
+   "detecting speech mic",
+   "transcribing mic 1/3",
+   "transcribing mic 2/3",
+   "transcribing mic 3/3",
+   "detecting speech remote",
+   "transcribing remote 1/4",
+   "transcribing remote 2/4",
+   "transcribing remote 3/4",
+   "transcribing remote 4/4",
+   "checking echo"
+  ],
+  "engine_calls": [
+   [
+    169600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    105600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    105600,
+    "ko",
+    null
+   ],
+   [
+    73600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    73600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    137600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    121600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ],
+   [
+    121600,
+    "ko",
+    null
+   ],
+   [
+    57600,
+    "ko",
+    "다음은 한국어와 영어가 섞인 의료 AI 회의입니다. 용어: Example Radiology, HIPAA, Pre-Sub, 510(k), FDA, AcmeScan-CXR, Acme"
+   ]
+  ],
+  "engine_lid_calls": [],
+  "engine_loaded": 2,
+  "engine_released": 1
+ }
+}

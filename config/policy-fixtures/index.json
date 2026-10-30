@@ -1,0 +1,1245 @@
+{
+ "schema": 1,
+ "about": [
+  "Shared corpus of policy.json verdicts (docs/POLICY.md 14). The Python test (pipeline/tests/test_policy.py) and the Swift selftest",
+  "(app/Sources/Policy.swift, selftest-policy) both read this file and must reach the same verdict for every case.",
+  "A case names the policy text to read and the conditions it is read under (exactly one of file, content, content_hex):",
+  "  file            fixture file name, or null = there is no policy.json (only the marker, if marker is true).",
+  "  content         the EXACT text of policy.json (a JSON string, UTF-8, never re-serialised: 0 is not false, 1.0 is not 1, NaN stays NaN).",
+  "  content_hex     the exact bytes of policy.json as hex, for input that is not text (a byte that is not UTF-8).",
+  "  marker          true = the file policy.required exists next to policy.json. Default false.",
+  "  pipeline_version the pipeline version compared with min_pipeline_version (tuple of integers). Default defaults.pipeline_version.",
+  "  file_info       what lstat of policy.json reports; keys override defaults.file_info: type (file|symlink|directory|error), uid, mode",
+  "                  (octal string, permission bits only), size (default: the byte length of the content actually read). type error = lstat of",
+  "                  policy.json itself fails with a permission error.",
+  "  ancestor_info   what lstat reports for EVERY ancestor directory of policy.json and for none else: uid, mode, type (directory by",
+  "                  default; file = an ancestor that is not a directory).",
+  "  prefix_hex / strip_prefix_hex / append_hex / truncate_to   byte-level edits of the file or content before it is read, in this order:",
+  "                  strip the leading bytes (they must be there), prepend prefix_hex, append append_hex, then cut to truncate_to bytes.",
+  "expect: state absent | valid | invalid; for invalid, reason is a substring of the lock reason (the lock reason is the code, or",
+  "  'code: where' with a key path; the shared proof is the CODE: the codes are listed in reason_codes below);",
+  "  lanes = the EFFECTIVE verdict of the five lanes (approvals and the signature pin applied; absent = all allow, invalid = all deny);",
+  "  lane_reasons (optional) = the policy-level reason of each deny; local_only_default / local_only_locked = the values the app uses",
+  "  (an invalid policy forces both true); recording_enabled (an invalid policy keeps recording on); profile, revision, allowed_engines,",
+  "  allowed_hosts, archive_allowed_roots, local_roots (null = no restriction, [] = nothing allowed) are checked when present.",
+  "  An invalid case may leave out lanes, local_only_default, local_only_locked and recording_enabled: defaults.invalid_expect holds them.",
+  "  enforced (optional) = the exact enforced layer the config reads (the company baseline of defaults.company_baseline_enforced, plus the",
+  "  policy's own enforced keys when it is valid). When it is left out: absent = {}, valid = not checked, invalid = the company baseline",
+  "  UNLESS the locked file still positively says profile personal (then {}): a damaged policy must not loosen the privacy settings.",
+  "Reading rules the cases pin: strict closed schema (unknown key = lock, only ext is free), BOM or duplicate key = lock, a lane value that",
+  "is not exactly the string allow is deny for THAT lane only, company: omitted lists are empty and allow needs an approval reference,",
+  "a number where a bool is required (0/1) or a bool where a number is required locks (never read through a number-to-bool bridge),",
+  "schema and revision are integers (true, 1.0, \"1\" lock), NaN / Infinity / 1e999 lock, a version is ASCII digits and dots only,",
+  "an archive root must be anchored ('/...', '~' or '~/...': never relative, '*', '.', '~user'),",
+  "a locked verdict is confirmed by a second read 500 ms later (not visible here: the fixtures are static)."
+ ],
+ "reason_codes": [
+  "bom",
+  "not-utf8",
+  "bad-json",
+  "duplicate-key",
+  "not-object",
+  "bad-schema",
+  "no-profile",
+  "bad-profile",
+  "bad-revision",
+  "unknown-key",
+  "forbidden-key",
+  "bad-type",
+  "bad-value",
+  "not-regular-file",
+  "bad-owner",
+  "group-or-other-writable",
+  "too-large",
+  "parent-bad-owner",
+  "parent-writable",
+  "parent-unreadable",
+  "unreadable",
+  "required-missing",
+  "pipeline-too-old",
+  "internal-error"
+ ],
+ "reason_codes_without_a_case": [
+  "internal-error"
+ ],
+ "defaults": {
+  "pipeline_version": "0.2.0",
+  "marker": false,
+  "file_info": {
+   "type": "file",
+   "uid": 0,
+   "mode": "0644"
+  },
+  "ancestor_info": {
+   "uid": 0,
+   "mode": "0755"
+  },
+  "company_baseline_enforced": {
+   "LOG_CONTENT": "0",
+   "ASR_ALLOW_DOWNLOAD": "0",
+   "MIC_MUTE_GATE": "on",
+   "NOTIFY_RECORDING": "1"
+  },
+  "invalid_expect": {
+   "lanes": {
+    "asr_remote": "deny",
+    "asr_cloud": "deny",
+    "llm": "deny",
+    "calendar": "deny",
+    "drive": "deny"
+   },
+   "local_only_default": true,
+   "local_only_locked": true,
+   "recording_enabled": true
+  }
+ },
+ "cases": [
+  {
+   "id": "valid_company",
+   "file": "valid_company.json",
+   "expect": {
+    "state": "valid",
+    "profile": "company",
+    "revision": 12,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "allow"
+    },
+    "lane_reasons": {
+     "asr_cloud": "policy-lane",
+     "llm": "policy-lane",
+     "calendar": "policy-lane"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "allowed_engines": [
+     "whisper",
+     "remote"
+    ],
+    "allowed_hosts": [
+     "asr.example.internal"
+    ],
+    "archive_allowed_roots": [
+     "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+    ],
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1",
+     "AUDIO_RETENTION_DAYS": "30"
+    }
+   }
+  },
+  {
+   "id": "valid_company_pipeline_0_10_0",
+   "file": "valid_company.json",
+   "pipeline_version": "0.10.0",
+   "expect": {
+    "state": "valid",
+    "profile": "company",
+    "revision": 12,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "allow"
+    },
+    "lane_reasons": {
+     "asr_cloud": "policy-lane",
+     "llm": "policy-lane",
+     "calendar": "policy-lane"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "allowed_engines": [
+     "whisper",
+     "remote"
+    ],
+    "allowed_hosts": [
+     "asr.example.internal"
+    ],
+    "archive_allowed_roots": [
+     "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+    ]
+   }
+  },
+  {
+   "id": "valid_company_marker_with_file",
+   "file": "valid_company.json",
+   "marker": true,
+   "expect": {
+    "state": "valid",
+    "profile": "company",
+    "revision": 12,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "allow"
+    },
+    "lane_reasons": {
+     "asr_cloud": "policy-lane",
+     "llm": "policy-lane",
+     "calendar": "policy-lane"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "allowed_engines": [
+     "whisper",
+     "remote"
+    ],
+    "allowed_hosts": [
+     "asr.example.internal"
+    ],
+    "archive_allowed_roots": [
+     "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+    ]
+   }
+  },
+  {
+   "id": "valid_company_leading_whitespace",
+   "file": "valid_company.json",
+   "prefix_hex": "0a0a20",
+   "expect": {
+    "state": "valid",
+    "profile": "company",
+    "revision": 12,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "allow"
+    },
+    "lane_reasons": {
+     "asr_cloud": "policy-lane",
+     "llm": "policy-lane",
+     "calendar": "policy-lane"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "allowed_engines": [
+     "whisper",
+     "remote"
+    ],
+    "allowed_hosts": [
+     "asr.example.internal"
+    ],
+    "archive_allowed_roots": [
+     "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+    ]
+   }
+  },
+  {
+   "id": "valid_company_pipeline_too_old",
+   "file": "valid_company.json",
+   "pipeline_version": "0.1.9",
+   "expect": {
+    "state": "invalid",
+    "reason": "pipeline-too-old",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true,
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  },
+  {
+   "id": "valid_personal",
+   "file": "valid_personal.json",
+   "expect": {
+    "state": "valid",
+    "profile": "personal",
+    "revision": 3,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "allow"
+    },
+    "lane_reasons": {
+     "asr_cloud": "policy-lane",
+     "llm": "policy-lane",
+     "calendar": "policy-lane"
+    },
+    "local_only_default": true,
+    "local_only_locked": false,
+    "recording_enabled": false,
+    "allowed_engines": null,
+    "allowed_hosts": null,
+    "archive_allowed_roots": null,
+    "enforced": {}
+   }
+  },
+  {
+   "id": "invalid_unknown_key",
+   "file": "invalid_unknown_key.json",
+   "expect": {
+    "state": "invalid",
+    "reason": "unknown-key",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true,
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  },
+  {
+   "id": "invalid_no_profile",
+   "file": "invalid_no_profile.json",
+   "expect": {
+    "state": "invalid",
+    "reason": "no-profile",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true,
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  },
+  {
+   "id": "invalid_types",
+   "file": "invalid_types.json",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "invalid_bom",
+   "file": "invalid_bom_duplicate_key.json",
+   "expect": {
+    "state": "invalid",
+    "reason": "bom",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "invalid_duplicate_key_after_bom_strip",
+   "file": "invalid_bom_duplicate_key.json",
+   "strip_prefix_hex": "efbbbf",
+   "expect": {
+    "state": "invalid",
+    "reason": "duplicate-key",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "company_omitted_lists",
+   "file": "company_omitted_lists.json",
+   "expect": {
+    "state": "valid",
+    "profile": "company",
+    "revision": 5,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "allow",
+     "llm": "allow",
+     "calendar": "allow",
+     "drive": "allow"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "allowed_engines": [],
+    "allowed_hosts": [],
+    "archive_allowed_roots": []
+   }
+  },
+  {
+   "id": "company_unapproved_lane",
+   "file": "company_unapproved_lane.json",
+   "expect": {
+    "state": "valid",
+    "profile": "company",
+    "revision": 6,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "lane_reasons": {
+     "asr_cloud": "policy-unapproved",
+     "llm": "policy-claude-unpinned",
+     "calendar": "policy-unapproved",
+     "drive": "policy-unapproved"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "allowed_engines": [],
+    "allowed_hosts": [],
+    "archive_allowed_roots": []
+   }
+  },
+  {
+   "id": "owner_not_root",
+   "file": "valid_company.json",
+   "file_info": {
+    "uid": 501
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-owner",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true,
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  },
+  {
+   "id": "group_writable",
+   "file": "valid_company.json",
+   "file_info": {
+    "mode": "0664"
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "group-or-other-writable",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "other_writable",
+   "file": "valid_company.json",
+   "file_info": {
+    "mode": "0602"
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "group-or-other-writable",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "symlink",
+   "file": "valid_company.json",
+   "file_info": {
+    "type": "symlink",
+    "mode": "0755"
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "not-regular-file",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "directory",
+   "file": "valid_company.json",
+   "file_info": {
+    "type": "directory",
+    "mode": "0755"
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "not-regular-file",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "too_large_by_stat",
+   "file": "valid_company.json",
+   "file_info": {
+    "size": 262145
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "too-large",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "parent_not_root_owned",
+   "file": "valid_company.json",
+   "ancestor_info": {
+    "uid": 501
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "parent-bad-owner",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "parent_group_writable",
+   "file": "valid_company.json",
+   "ancestor_info": {
+    "mode": "0775"
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "parent-writable",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "broken_json_prefix",
+   "file": "valid_company.json",
+   "prefix_hex": "7b",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-json",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "truncated_write",
+   "file": "valid_company.json",
+   "truncate_to": 120,
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-json",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "trailing_garbage",
+   "file": "valid_company.json",
+   "append_hex": "0a7b7d",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-json",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "empty_file",
+   "file": "valid_company.json",
+   "truncate_to": 0,
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-json",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true,
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  },
+  {
+   "id": "absent",
+   "file": null,
+   "expect": {
+    "state": "absent",
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "allow",
+     "llm": "allow",
+     "calendar": "allow",
+     "drive": "allow"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "allowed_engines": null,
+    "allowed_hosts": null,
+    "archive_allowed_roots": null,
+    "enforced": {}
+   }
+  },
+  {
+   "id": "required_marker_without_file",
+   "file": null,
+   "marker": true,
+   "expect": {
+    "state": "invalid",
+    "reason": "required-missing",
+    "lanes": {
+     "asr_remote": "deny",
+     "asr_cloud": "deny",
+     "llm": "deny",
+     "calendar": "deny",
+     "drive": "deny"
+    },
+    "local_only_default": true,
+    "local_only_locked": true,
+    "recording_enabled": true,
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  },
+  {
+   "id": "type_local_only_locked_int",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"local_only\":{\"locked\":0}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_local_only_default_int",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"local_only\":{\"default\":1}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_local_only_default_null",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"local_only\":{\"default\":null}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_recording_enabled_int",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"recording\":{\"enabled\":1}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_allow_foreign_int",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"asr\":{\"allow_foreign\":1}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_send_vocab_string",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"asr\":{\"send_vocab\":{\"server\":\"true\"}}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_cap_bool",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"asr\":{\"daily_audio_minutes_cap\":true}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_cap_float",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"asr\":{\"daily_audio_minutes_cap\":120.0}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "value_cap_negative",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"asr\":{\"daily_audio_minutes_cap\":-1}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "type_allowed_hosts_string",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"asr\":{\"allowed_hosts\":\"asr.example\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "type_lanes_array",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"lanes\":[\"drive\"]}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "schema_true",
+   "content": "{\"schema\":true,\"profile\":\"company\",\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-schema"
+   }
+  },
+  {
+   "id": "schema_float",
+   "content": "{\"schema\":1.0,\"profile\":\"company\",\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-schema"
+   }
+  },
+  {
+   "id": "schema_two",
+   "content": "{\"schema\":2,\"profile\":\"company\",\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-schema"
+   }
+  },
+  {
+   "id": "schema_string",
+   "content": "{\"schema\":\"1\",\"profile\":\"company\",\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-schema"
+   }
+  },
+  {
+   "id": "schema_missing",
+   "content": "{\"profile\":\"company\",\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-schema"
+   }
+  },
+  {
+   "id": "profile_capitalised",
+   "content": "{\"schema\":1,\"profile\":\"Company\",\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-profile"
+   }
+  },
+  {
+   "id": "profile_null",
+   "content": "{\"schema\":1,\"profile\":null,\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-profile"
+   }
+  },
+  {
+   "id": "revision_true",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":true}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-revision"
+   }
+  },
+  {
+   "id": "revision_zero",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":0}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-revision"
+   }
+  },
+  {
+   "id": "revision_float",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1.0}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-revision"
+   }
+  },
+  {
+   "id": "revision_string",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":\"1\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-revision"
+   }
+  },
+  {
+   "id": "revision_missing",
+   "content": "{\"schema\":1,\"profile\":\"company\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-revision"
+   }
+  },
+  {
+   "id": "forbidden_key_in_enforced",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"enforced\":{\"ARCHIVE_DIR\":\"/x\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "forbidden-key"
+   }
+  },
+  {
+   "id": "forbidden_key_in_defaults",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"defaults\":{\"LOCAL_ARCHIVE_DIR\":\"/x\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "forbidden-key"
+   }
+  },
+  {
+   "id": "unknown_key_in_enforced",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"enforced\":{\"CLAUDE_KEY_SERVICE\":\"x\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "unknown-key"
+   }
+  },
+  {
+   "id": "version_text",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"min_pipeline_version\":\"latest\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "version_five_parts",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"min_pipeline_version\":\"1.2.3.4.5\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "version_fullwidth_digits",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"min_pipeline_version\":\"０.２.０\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "version_arabic_indic_digits",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"min_pipeline_version\":\"٠.٢.٠\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "version_no_break_space_padding",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"min_pipeline_version\":\"0.2.0\\u00a0\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "version_number",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"min_pipeline_version\":0.2}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-type"
+   }
+  },
+  {
+   "id": "version_padded_with_ascii_spaces",
+   "content": "{\"schema\":1,\"profile\":\"personal\",\"revision\":1,\"min_pipeline_version\":\" 0.2.0 \"}",
+   "expect": {
+    "state": "valid",
+    "profile": "personal",
+    "revision": 1,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "allow",
+     "llm": "allow",
+     "calendar": "allow",
+     "drive": "allow"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true
+   }
+  },
+  {
+   "id": "not_utf8",
+   "content_hex": "7b22736368656d61223a312c2270726f66696c65223a22706572736f6e616c222c227265766973696f6e223a312c22657874223a22ff227d",
+   "expect": {
+    "state": "invalid",
+    "reason": "not-utf8"
+   }
+  },
+  {
+   "id": "top_level_array",
+   "content": "[{\"schema\":1,\"profile\":\"personal\",\"revision\":1}]",
+   "expect": {
+    "state": "invalid",
+    "reason": "not-object"
+   }
+  },
+  {
+   "id": "top_level_null",
+   "content": "null",
+   "expect": {
+    "state": "invalid",
+    "reason": "not-object"
+   }
+  },
+  {
+   "id": "top_level_string",
+   "content": "\"personal\"",
+   "expect": {
+    "state": "invalid",
+    "reason": "not-object"
+   }
+  },
+  {
+   "id": "nan_revision",
+   "content": "{\"schema\":1,\"profile\":\"personal\",\"revision\":NaN}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-json"
+   }
+  },
+  {
+   "id": "infinity_in_ext",
+   "content": "{\"schema\":1,\"profile\":\"personal\",\"revision\":1,\"ext\":{\"x\":Infinity}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-json"
+   }
+  },
+  {
+   "id": "overflowing_number_in_ext",
+   "content": "{\"schema\":1,\"profile\":\"personal\",\"revision\":1,\"ext\":{\"x\":1e999}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-json"
+   }
+  },
+  {
+   "id": "support_contact_empty",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"support\":{\"contact\":\"\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "runtime_root_relative",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"runtime\":{\"root\":\"releases\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "runtime_root_dotdot",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"runtime\":{\"root\":\"/Library/../etc\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "archive_root_relative",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"archive\":{\"allowed_roots\":[\"Meetings\"]}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "archive_root_star",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"archive\":{\"allowed_roots\":[\"*\"]}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "archive_root_dot",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"archive\":{\"allowed_roots\":[\".\"]}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "archive_root_tilde_user",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"archive\":{\"allowed_roots\":[\"~root/Meetings\"]}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "local_root_relative",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"archive\":{\"local_roots\":[\"LocalMeetings\"]}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-value"
+   }
+  },
+  {
+   "id": "archive_roots_anchored_forms",
+   "content": "{\"schema\":1,\"profile\":\"personal\",\"revision\":1,\"archive\":{\"allowed_roots\":[\"~\",\"/Volumes/Team/Meetings\",\"~/a/*/b\"],\"local_roots\":[\"~/LocalMeetings\",\"/Volumes/Local\"]}}",
+   "expect": {
+    "state": "valid",
+    "profile": "personal",
+    "revision": 1,
+    "lanes": {
+     "asr_remote": "allow",
+     "asr_cloud": "allow",
+     "llm": "allow",
+     "calendar": "allow",
+     "drive": "allow"
+    },
+    "local_only_default": false,
+    "local_only_locked": false,
+    "recording_enabled": true,
+    "archive_allowed_roots": [
+     "~",
+     "/Volumes/Team/Meetings",
+     "~/a/*/b"
+    ],
+    "local_roots": [
+     "~/LocalMeetings",
+     "/Volumes/Local"
+    ]
+   }
+  },
+  {
+   "id": "parent_is_not_a_directory",
+   "file": "valid_company.json",
+   "ancestor_info": {
+    "type": "file"
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "parent-unreadable"
+   }
+  },
+  {
+   "id": "stat_of_the_file_fails",
+   "file": "valid_company.json",
+   "file_info": {
+    "type": "error"
+   },
+   "expect": {
+    "state": "invalid",
+    "reason": "unreadable"
+   }
+  },
+  {
+   "id": "locked_company_keeps_only_the_baseline",
+   "content": "{\"schema\":1,\"profile\":\"company\",\"revision\":1,\"typo\":1,\"enforced\":{\"LOG_CONTENT\":\"1\",\"AUDIO_RETENTION_DAYS\":\"30\"},\"defaults\":{\"ASR_ENGINE\":\"auto\"}}",
+   "expect": {
+    "state": "invalid",
+    "reason": "unknown-key",
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  },
+  {
+   "id": "locked_personal_has_no_baseline",
+   "content": "{\"schema\":1,\"profile\":\"personal\",\"revision\":1,\"typo\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "unknown-key",
+    "enforced": {}
+   }
+  },
+  {
+   "id": "locked_personal_pipeline_too_old",
+   "content": "{\"schema\":1,\"profile\":\"personal\",\"revision\":1,\"min_pipeline_version\":\"9.0.0\"}",
+   "expect": {
+    "state": "invalid",
+    "reason": "pipeline-too-old",
+    "enforced": {}
+   }
+  },
+  {
+   "id": "locked_bad_profile_keeps_the_baseline",
+   "content": "{\"schema\":1,\"profile\":\"Personal\",\"revision\":1}",
+   "expect": {
+    "state": "invalid",
+    "reason": "bad-profile",
+    "enforced": {
+     "LOG_CONTENT": "0",
+     "ASR_ALLOW_DOWNLOAD": "0",
+     "MIC_MUTE_GATE": "on",
+     "NOTIFY_RECORDING": "1"
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,109 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-16",
+    "note": "Written from the documentation of the Azure AI Speech fast transcription REST API (api-version 2025-10-15) and the design appendix, NOT recorded from the service. Field names, units and the shape of the error answer are unverified until the first live call (SPEC 18). Replace this file with a recorded answer to a synthetic TTS clip of the owner's own voice then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "the definition part build_definition makes from vocabulary_txt and a config; the aliases of the file are never phrases"
+  },
+  "vocabulary_txt": "# domain terms (invented for this fixture)\nAcme\nAcmeScan-CXR\n510(k)\nPre-Sub\n한국어 용어\nAcme = 애크미 | 액미\n\nacme\n",
+  "cases": [
+    {
+      "name": "defaults: vocabulary on, no locales, bias 1.0",
+      "config": {
+        "asr_send_vocab": true,
+        "asr_azure_locales": "",
+        "asr_azure_bias": 1.0
+      },
+      "definition": {
+        "profanityFilterMode": "None",
+        "phraseList": {
+          "phrases": [
+            "Acme",
+            "AcmeScan-CXR",
+            "510(k)",
+            "Pre-Sub",
+            "한국어 용어"
+          ],
+          "biasingWeight": 1.0
+        }
+      }
+    },
+    {
+      "name": "locales and a bias",
+      "config": {
+        "asr_send_vocab": true,
+        "asr_azure_locales": "ko-KR,en-US",
+        "asr_azure_bias": 1.5
+      },
+      "definition": {
+        "profanityFilterMode": "None",
+        "locales": [
+          "ko-KR",
+          "en-US"
+        ],
+        "phraseList": {
+          "phrases": [
+            "Acme",
+            "AcmeScan-CXR",
+            "510(k)",
+            "Pre-Sub",
+            "한국어 용어"
+          ],
+          "biasingWeight": 1.5
+        }
+      }
+    },
+    {
+      "name": "locales spelled loosely",
+      "config": {
+        "asr_send_vocab": true,
+        "asr_azure_locales": " ko_kr; EN-us  ko-KR ",
+        "asr_azure_bias": 0.0
+      },
+      "definition": {
+        "profanityFilterMode": "None",
+        "locales": [
+          "ko-KR",
+          "en-US"
+        ],
+        "phraseList": {
+          "phrases": [
+            "Acme",
+            "AcmeScan-CXR",
+            "510(k)",
+            "Pre-Sub",
+            "한국어 용어"
+          ],
+          "biasingWeight": 0.0
+        }
+      }
+    },
+    {
+      "name": "ASR_SEND_VOCAB off: no phraseList, locales stay",
+      "config": {
+        "asr_send_vocab": false,
+        "asr_azure_locales": "ko-KR",
+        "asr_azure_bias": 1.0
+      },
+      "definition": {
+        "profanityFilterMode": "None",
+        "locales": [
+          "ko-KR"
+        ]
+      }
+    },
+    {
+      "name": "ASR_SEND_VOCAB off and no locales: nothing but the profanity mode",
+      "config": {
+        "asr_send_vocab": false,
+        "asr_azure_locales": "",
+        "asr_azure_bias": 1.0
+      },
+      "definition": {
+        "profanityFilterMode": "None"
+      }
+    }
+  ]
+}

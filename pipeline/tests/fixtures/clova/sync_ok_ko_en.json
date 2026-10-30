@@ -1,0 +1,184 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-20",
+    "note": "Written from the public documentation of the NAVER CLOVA Speech long-sentence API (local file upload: POST /recognizer/upload, https://api.ncloud-docs.com/docs/ai-application-service-clovaspeech-longsentence-local; request fields of the upload example and the Object Storage page for the response fields), NOT recorded from the service. The documentation does not describe the answer of a SYNC call beyond a sample whose JSON has syntax errors: field names, units and the shape of every answer below are unverified until the first live call by the owner. Replace these files with recorded answers to a synthetic TTS clip then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 200 sync answer of about 40 s of speech: Korean then English, two speakers, millisecond times, words, an event"
+  },
+  "block_s": 41.0,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json;charset=UTF-8"
+  },
+  "body": {
+    "result": "COMPLETED",
+    "message": "Succeeded",
+    "token": "token-invented",
+    "version": "ncp_v2_v1.0",
+    "params": {
+      "service": "ncp",
+      "domain": "general",
+      "lang": "enko",
+      "completion": "sync",
+      "diarization": {
+        "enable": true,
+        "speakerCountMin": -1,
+        "speakerCountMax": -1
+      },
+      "sed": {
+        "enable": false
+      },
+      "boostings": [],
+      "forbiddens": "",
+      "wordAlignment": true,
+      "fullText": true,
+      "noiseFiltering": true,
+      "resultToObs": false,
+      "priority": 0,
+      "userdata": {
+        "_ncp_DomainCode": "NEST",
+        "_ncp_DomainId": 1234,
+        "_ncp_TaskId": 5678,
+        "_ncp_TraceId": "trace-invented"
+      }
+    },
+    "progress": 100,
+    "keywords": {},
+    "segments": [
+      {
+        "start": 600,
+        "end": 5400,
+        "text": "안녕하세요 오늘은 액미스캔 출시 일정을 논의하겠습니다.",
+        "confidence": 0.93,
+        "diarization": {
+          "label": "1"
+        },
+        "speaker": {
+          "label": "1",
+          "name": "A",
+          "edited": false
+        },
+        "words": [
+          [
+            600,
+            1400,
+            "안녕하세요"
+          ],
+          [
+            1500,
+            2200,
+            "오늘은"
+          ],
+          [
+            2300,
+            3500,
+            "액미스캔"
+          ],
+          [
+            3600,
+            4300,
+            "출시"
+          ],
+          [
+            4400,
+            5400,
+            "일정을"
+          ]
+        ],
+        "textEdited": "안녕하세요 오늘은 액미스캔 출시 일정을 논의하겠습니다."
+      },
+      {
+        "start": 6100,
+        "end": 13250,
+        "text": "Let's start with the pre-submission timeline for the review.",
+        "confidence": 0.88,
+        "diarization": {
+          "label": "2"
+        },
+        "speaker": {
+          "label": "2",
+          "name": "B",
+          "edited": false
+        },
+        "words": [
+          [
+            6100,
+            6500,
+            "Let's"
+          ],
+          [
+            6600,
+            7000,
+            "start"
+          ],
+          [
+            7100,
+            7400,
+            "with"
+          ]
+        ],
+        "textEdited": "Let's start with the pre-submission timeline for the review."
+      },
+      {
+        "start": 14000,
+        "end": 21400,
+        "text": "네 그러면 다음 주 화요일까지 자료를 보내 드리겠습니다.",
+        "confidence": 0.91,
+        "diarization": {
+          "label": "1"
+        },
+        "speaker": {
+          "label": "1",
+          "name": "A",
+          "edited": false
+        },
+        "words": [],
+        "textEdited": ""
+      },
+      {
+        "start": 22000,
+        "end": 40300,
+        "text": "Sounds good, we will review the draft and send comments by Friday.",
+        "confidence": 0.86,
+        "diarization": {
+          "label": "2"
+        },
+        "speaker": {
+          "label": "2",
+          "name": "B",
+          "edited": false
+        },
+        "words": [],
+        "textEdited": ""
+      }
+    ],
+    "text": "안녕하세요 오늘은 액미스캔 출시 일정을 논의하겠습니다. Let's start with the pre-submission timeline for the review. 네 그러면 다음 주 화요일까지 자료를 보내 드리겠습니다. Sounds good, we will review the draft and send comments by Friday.",
+    "confidence": 0.895,
+    "speakers": [
+      {
+        "label": "1",
+        "name": "A",
+        "edited": false
+      },
+      {
+        "label": "2",
+        "name": "B",
+        "edited": false
+      }
+    ],
+    "events": [
+      {
+        "type": "music",
+        "label": "1",
+        "labelEdited": false,
+        "start": 1400,
+        "end": 5000
+      }
+    ],
+    "eventTypes": [
+      "music"
+    ]
+  }
+}

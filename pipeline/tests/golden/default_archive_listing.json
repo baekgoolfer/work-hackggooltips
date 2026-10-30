@@ -1,0 +1,41 @@
+{
+ "fake_asr": {
+  "ok": true,
+  "stage": "done",
+  "final_dir": "2026-10/2026-10-07_1400_Weekly-Sync",
+  "files": [
+   "audio.m4a",
+   "meeting-note.md",
+   "mic.m4a",
+   "remote.m4a",
+   "session.json",
+   "transcript.json",
+   "transcript.md"
+  ],
+  "staging_after": [
+   "state.json"
+  ],
+  "transcript_json_sha256": "c22b1936df278967bb0ccdc48688bce7eccce4be7d56e7d6d8f108cd47177d96",
+  "transcript_md_sha256": "4125d6e3c4f5a0a5ae8be91f8300c9fb27f0402e07fc97cb44de6259e0c450ba"
+ },
+ "real_asr": {
+  "ok": true,
+  "stage": "done",
+  "final_dir": "2026-10/2026-10-07_1400_Weekly-Sync",
+  "files": [
+   "audio.m4a",
+   "meeting-note.md",
+   "mic.m4a",
+   "remote.m4a",
+   "session.json",
+   "transcript.json",
+   "transcript.md"
+  ],
+  "staging_after": [
+   "state.json"
+  ],
+  "transcript_json_sha256": "0632db573e51f6ad478b7806576ef2f2cf8079b116c0e3309397777ea2c117f8",
+  "transcript_md_sha256": "f0cf378300535bad05919b6ce97c7847cf2cf46efa55296ab848d6ebc4233201",
+  "engine_calls": 9
+ }
+}

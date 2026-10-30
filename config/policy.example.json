@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "profile": "company",
+  "revision": 1,
+  "issued": "2026-10-14T09:00:00+09:00",
+  "min_pipeline_version": "0.1.0",
+  "support": {
+    "contact": "IT helpdesk, it-help@example.com"
+  },
+  "lanes": {
+    "asr_remote": "deny",
+    "asr_cloud": "deny",
+    "llm": "deny",
+    "calendar": "deny",
+    "drive": "deny"
+  },
+  "approvals": {},
+  "local_only": {
+    "default": true,
+    "locked": false
+  },
+  "recording": {
+    "enabled": true
+  },
+  "asr": {
+    "allowed_engines": ["whisper"],
+    "allowed_hosts": [],
+    "allow_foreign": false,
+    "daily_audio_minutes_cap": 240,
+    "send_vocab": {
+      "server": true,
+      "cloud": false
+    },
+    "org_consents": []
+  },
+  "archive": {
+    "allowed_roots": ["~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"],
+    "local_roots": []
+  },
+  "llm": {
+    "claude_bin_pin": {
+      "team_id": "XXXXXXXXXX"
+    },
+    "child_env": {}
+  },
+  "runtime": {
+    "root": "/Library/Application Support/MeetingCapture/releases"
+  },
+  "defaults": {
+    "ASR_ENGINE": "whisper",
+    "LOG_RETENTION_DAYS": "30",
+    "APP_LOG_MAX_MB": "5"
+  },
+  "enforced": {
+    "LOG_CONTENT": "0",
+    "ASR_ALLOW_DOWNLOAD": "0",
+    "MIC_MUTE_GATE": "on",
+    "NOTIFY_RECORDING": "1"
+  },
+  "ext": {
+    "note": "EXAMPLE BASELINE (docs/POLICY.md). Every external lane is deny and nothing is approved, so this file opens nothing. Copy it, raise revision, and open one lane at a time: set the lane to allow AND add approvals.<lane> with a real ticket or sign-off reference. The Team ID in llm.claude_bin_pin is a placeholder that matches no real signature; replace it before llm is ever allowed. min_pipeline_version is 0.1.0 only so that this example stays valid for every pipeline that can read a policy; the Swift app requires at least 0.2.0 whenever a policy exists, and a real policy should say 0.2.0 or higher once the fleet runs it.",
+    "ring": "example-baseline"
+  }
+}

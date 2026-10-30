@@ -1,0 +1,48 @@
+{
+  "_fixture": {
+    "origin": "document-derived",
+    "verified": false,
+    "written": "2026-10-16",
+    "note": "Written from the documentation of the Azure AI Speech fast transcription REST API (api-version 2025-10-15) and the design appendix, NOT recorded from the service. Field names, units and the shape of the error answer are unverified until the first live call (SPEC 18). Replace this file with a recorded answer to a synthetic TTS clip of the owner's own voice then, and set verified to true.",
+    "no_personal_data": "all text is invented",
+    "case": "a 200 answer with the shorter field names offset / duration (milliseconds), as an older api-version spells them"
+  },
+  "chunk_s": 8.0,
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "duration": 8000,
+    "combinedPhrases": [
+      {
+        "text": "네 그렇게 진행하죠. 다음 주 화요일에 다시 확인하겠습니다."
+      }
+    ],
+    "phrases": [
+      {
+        "offset": 480,
+        "duration": 2100,
+        "text": "네 그렇게 진행하죠.",
+        "locale": "ko",
+        "confidence": 0.88,
+        "words": [
+          {
+            "text": "네",
+            "offset": 480,
+            "duration": 300
+          }
+        ]
+      },
+      {
+        "offset": 3400,
+        "duration": 3900,
+        "text": "다음 주 화요일에 다시 확인하겠습니다.",
+        "locale": "ko-KR"
+      }
+    ],
+    "unknownFutureField": {
+      "kept": "ignored"
+    }
+  }
+}

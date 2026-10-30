@@ -1,0 +1,340 @@
+{
+  "schema": 1,
+  "about": "Cases of archive_root_matches(path, roots). 'home' is the HOME of the run (the Python test sets $HOME to it; the Swift test expands ~ with it). Nothing here exists on disk, so realpath only normalises (.., //). Match = realpath of the path, NFC + casefold, split into components; each root the same (~ expanded, realpath); a root matches when its components are a PREFIX of the path's and every component matches: '*' inside a component stands for any run of characters (including none), everything else is literal. roots null = no restriction (true), [] = nothing allowed (false). A root or a path that is not anchored matches nothing, whatever the working directory: anchored means it starts with '/', is exactly '~' or starts with '~/' (relative, '*', '.', '../x' and '~user/x' are not; ~user would read another account's home). The Python test also runs every case once from each of two real working directories.",
+  "home": "/Users/alice",
+  "cases": [
+    {
+      "id": "exact",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings",
+      "expect": true,
+      "note": "the root itself, * matched inside one component"
+    },
+    {
+      "id": "below_root",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings/2026-10",
+      "expect": true,
+      "note": "a folder below the root"
+    },
+    {
+      "id": "wildcard_other_domain",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-alice@example.org/Shared drives/Meetings",
+      "expect": false,
+      "note": "the fixed part of the component must match"
+    },
+    {
+      "id": "sibling_prefix",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings-evil",
+      "expect": false,
+      "note": "a longer name is not inside the root"
+    },
+    {
+      "id": "parent_of_root",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives",
+      "expect": false,
+      "note": "above the root"
+    },
+    {
+      "id": "my_drive_not_shared",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/My Drive/Meetings",
+      "expect": false,
+      "note": "another folder of the same account"
+    },
+    {
+      "id": "case_insensitive",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/googledrive-USER@example.COM/shared DRIVES/meetings",
+      "expect": true,
+      "note": "casefold on both sides"
+    },
+    {
+      "id": "dotdot_escape",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings/../Secret",
+      "expect": false,
+      "note": ".. is resolved before the comparison"
+    },
+    {
+      "id": "dotdot_inside",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings/a/../b",
+      "expect": true,
+      "note": ".. that stays inside the root"
+    },
+    {
+      "id": "tilde_in_path",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "~/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings/x",
+      "expect": true,
+      "note": "~ of the path is expanded too"
+    },
+    {
+      "id": "star_empty_run",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-@example.com/Shared drives/Meetings",
+      "expect": true,
+      "note": "* matches an empty run"
+    },
+    {
+      "id": "star_is_one_component",
+      "roots": [
+        "~/Library/CloudStorage/*/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-a/Meetings/x",
+      "expect": true,
+      "note": "a lone * is one component"
+    },
+    {
+      "id": "star_does_not_cross",
+      "roots": [
+        "~/Library/CloudStorage/*/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-a/b/Meetings",
+      "expect": false,
+      "note": "* never spans a slash"
+    },
+    {
+      "id": "question_mark_literal",
+      "roots": [
+        "~/Library/CloudStorage/Meet?ngs"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/Meetings",
+      "expect": false,
+      "note": "only * is a wildcard"
+    },
+    {
+      "id": "question_mark_itself",
+      "roots": [
+        "~/Library/CloudStorage/Meet?ngs"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/Meet?ngs/x",
+      "expect": true,
+      "note": "? matches itself"
+    },
+    {
+      "id": "bracket_literal",
+      "roots": [
+        "~/Library/CloudStorage/[ab]"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/a",
+      "expect": false,
+      "note": "[..] is not a character class"
+    },
+    {
+      "id": "star_with_question_mark",
+      "roots": [
+        "~/Library/CloudStorage/Drive-*?"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/Drive-abc",
+      "expect": false,
+      "note": "? stays literal next to a *"
+    },
+    {
+      "id": "star_with_question_mark_itself",
+      "roots": [
+        "~/Library/CloudStorage/Drive-*?"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/Drive-ab?",
+      "expect": true,
+      "note": "the literal ? is there"
+    },
+    {
+      "id": "star_with_bracket",
+      "roots": [
+        "~/Library/CloudStorage/[a]*"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/a1",
+      "expect": false,
+      "note": "[a] stays literal next to a *"
+    },
+    {
+      "id": "nfc_root_nfd_path",
+      "roots": [
+        "~/Library/CloudStorage/공유 드라이브"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/공유 드라이브/m",
+      "expect": true,
+      "note": "NFC root, NFD path (APFS keeps what it was given)"
+    },
+    {
+      "id": "nfd_root_nfc_path",
+      "roots": [
+        "~/Library/CloudStorage/공유 드라이브"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/공유 드라이브/m",
+      "expect": true,
+      "note": "NFD root, NFC path"
+    },
+    {
+      "id": "double_and_trailing_slash",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings//"
+      ],
+      "path": "/Users/alice/Library/CloudStorage//GoogleDrive-user@example.com//Shared drives/Meetings/",
+      "expect": true,
+      "note": "slashes are normalised"
+    },
+    {
+      "id": "second_root_matches",
+      "roots": [
+        "~/Nowhere",
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings",
+      "expect": true,
+      "note": "any root may match"
+    },
+    {
+      "id": "empty_roots",
+      "roots": [],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings",
+      "expect": false,
+      "note": "no root = nothing is allowed"
+    },
+    {
+      "id": "null_roots",
+      "roots": null,
+      "path": "/Users/alice/Library/CloudStorage/anywhere",
+      "expect": true,
+      "note": "null = no restriction (the caller decides when a policy has no roots)"
+    },
+    {
+      "id": "slash_root_never_matches",
+      "roots": [
+        "/"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/anywhere",
+      "expect": false,
+      "note": "a root without a component matches nothing"
+    },
+    {
+      "id": "blank_root_ignored",
+      "roots": [
+        "",
+        "   ",
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings",
+      "expect": true,
+      "note": "blank entries are skipped"
+    },
+    {
+      "id": "relative_root",
+      "roots": [
+        "Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/GoogleDrive-user@example.com/Shared drives/Meetings",
+      "expect": false,
+      "note": "a relative root matches nothing: it is never read against the working directory"
+    },
+    {
+      "id": "star_root",
+      "roots": [
+        "*"
+      ],
+      "path": "/Users/alice/x",
+      "expect": false,
+      "note": "a lone * is a relative root, not 'everything'"
+    },
+    {
+      "id": "dot_root",
+      "roots": [
+        "."
+      ],
+      "path": "/Users/alice/x",
+      "expect": false,
+      "note": ". is the working directory: no root"
+    },
+    {
+      "id": "dotdot_root",
+      "roots": [
+        "../alice"
+      ],
+      "path": "/Users/alice/x",
+      "expect": false,
+      "note": ".. is relative too"
+    },
+    {
+      "id": "tilde_user_root",
+      "roots": [
+        "~root/Library"
+      ],
+      "path": "/var/root/Library/x",
+      "expect": false,
+      "note": "only the current user's ~ is expanded; ~user is not an anchored form"
+    },
+    {
+      "id": "relative_path",
+      "roots": [
+        "~/Library/CloudStorage"
+      ],
+      "path": "Library/CloudStorage/x",
+      "expect": false,
+      "note": "a relative path is inside nothing"
+    },
+    {
+      "id": "bare_tilde_root",
+      "roots": [
+        "~"
+      ],
+      "path": "/Users/alice/anything/below",
+      "expect": true,
+      "note": "~ alone is the home folder"
+    },
+    {
+      "id": "bare_tilde_root_other_home",
+      "roots": [
+        "~"
+      ],
+      "path": "/Users/bob/x",
+      "expect": false,
+      "note": "another home is not inside ~"
+    },
+    {
+      "id": "relative_root_skipped_anchored_root_counts",
+      "roots": [
+        "Meetings",
+        "~/Library/CloudStorage"
+      ],
+      "path": "/Users/alice/Library/CloudStorage/x",
+      "expect": true,
+      "note": "a relative root is skipped, an anchored one still counts"
+    },
+    {
+      "id": "empty_path",
+      "roots": [
+        "~/Library/CloudStorage/GoogleDrive-*@example.com/Shared drives/Meetings"
+      ],
+      "path": "",
+      "expect": false,
+      "note": "no path"
+    }
+  ]
+}

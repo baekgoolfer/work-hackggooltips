@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "profile": "company",
+  "revision": 4,
+  "min_pipeline_version": "0.2.0",
+  "local_only": {
+    "default": "yes",
+    "locked": false
+  },
+  "recording": {
+    "enabled": "false"
+  }
+}

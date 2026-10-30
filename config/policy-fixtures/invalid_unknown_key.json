@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "profile": "company",
+  "revision": 2,
+  "min_pipeline_version": "0.2.0",
+  "lanes": {
+    "asr_remote": "allow",
+    "drive": "allow"
+  },
+  "approvals": {
+    "drive": "TICKET-1234"
+  },
+  "local_only": {
+    "default": true,
+    "lockd": true
+  }
+}

@@ -1,0 +1,525 @@
+{
+ "_fixture": "DOCUMENT-DERIVED FIXTURE, not recorded from a real account: the shape follows Google's public reference (Calendar API events.list / Events resource, OAuth 2.0 for installed apps). Names, addresses and ids are invented.",
+ "kind": "calendar#events",
+ "etag": "\"0\"",
+ "summary": "owner@example.test",
+ "timeZone": "Asia/Seoul",
+ "accessRole": "owner",
+ "items": [
+  {
+   "id": "mtg0planning0one",
+   "status": "confirmed",
+   "summary": "Planning",
+   "start": {
+    "dateTime": "2026-10-07T14:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:00:00+09:00"
+   },
+   "location": "Room 4F",
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "room-4f@resource.example.test",
+     "resource": true,
+     "responseStatus": "accepted",
+     "displayName": "Room 4F"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "allday0offsite",
+   "status": "confirmed",
+   "summary": "Offsite",
+   "start": {
+    "date": "2026-10-07"
+   },
+   "end": {
+    "date": "2026-10-08"
+   },
+   "creator": {
+    "email": "owner@example.test",
+    "self": true
+   },
+   "organizer": {
+    "email": "owner@example.test",
+    "self": true
+   }
+  },
+  {
+   "id": "declined0review",
+   "status": "confirmed",
+   "summary": "Review",
+   "start": {
+    "dateTime": "2026-10-07T14:30:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:00:00+09:00"
+   },
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "declined"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "needsAction"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "invite0unanswered",
+   "status": "confirmed",
+   "summary": "Chat",
+   "start": {
+    "dateTime": "2026-10-07T14:50:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:50:00+09:00"
+   },
+   "attendees": [
+    {
+     "email": "stranger@example.test",
+     "organizer": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "needsAction"
+    }
+   ],
+   "creator": {
+    "email": "stranger@example.test"
+   },
+   "organizer": {
+    "email": "stranger@example.test"
+   }
+  },
+  {
+   "id": "weeklysync0abc_20261007T050000Z",
+   "recurringEventId": "weeklysync0abc",
+   "status": "confirmed",
+   "summary": "Weekly sync",
+   "start": {
+    "dateTime": "2026-10-07T14:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T14:30:00+09:00"
+   },
+   "originalStartTime": {
+    "dateTime": "2026-10-07T14:00:00+09:00"
+   },
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "second@example.test",
+     "optional": true,
+     "responseStatus": "tentative"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "hangout0link",
+   "status": "confirmed",
+   "summary": "Standup",
+   "start": {
+    "dateTime": "2026-10-07T14:10:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T14:25:00+09:00"
+   },
+   "hangoutLink": "https://meet.google.com/abc-defg-hij",
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "confdata0only",
+   "status": "confirmed",
+   "summary": "Demo",
+   "start": {
+    "dateTime": "2026-10-07T14:15:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:00:00+09:00"
+   },
+   "conferenceData": {
+    "conferenceSolution": {
+     "name": "Acme Video"
+    },
+    "entryPoints": [
+     {
+      "uri": "https://video.example.test/join/1"
+     }
+    ]
+   },
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "loc0zoom",
+   "status": "confirmed",
+   "summary": "Sync",
+   "start": {
+    "dateTime": "2026-10-07T14:20:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T14:50:00+09:00"
+   },
+   "location": "https://acme.zoom.us/j/123456789012",
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "desc0teams",
+   "status": "confirmed",
+   "summary": "Check-in",
+   "start": {
+    "dateTime": "2026-10-07T14:20:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T14:50:00+09:00"
+   },
+   "description": "<p>Join: <a href=\"https://teams.microsoft.com/l/meetup-join/19%3ameeting_x\">link</a></p>",
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "desc0webex",
+   "status": "confirmed",
+   "summary": "Call",
+   "start": {
+    "dateTime": "2026-10-07T14:25:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T14:55:00+09:00"
+   },
+   "description": "Join at https://acme.webex.com/meet/room",
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "desc0words",
+   "status": "confirmed",
+   "summary": "Photo walk",
+   "start": {
+    "dateTime": "2026-10-07T14:30:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:30:00+09:00"
+   },
+   "location": "Cafe",
+   "description": "Bring the zoom lens. Teams of two. A google meet-up afterwards.",
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "resources0only",
+   "status": "confirmed",
+   "summary": "Desk time",
+   "start": {
+    "dateTime": "2026-10-07T14:35:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:35:00+09:00"
+   },
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "room-4f@resource.example.test",
+     "resource": true,
+     "responseStatus": "accepted",
+     "displayName": "Room 4F"
+    }
+   ],
+   "creator": {
+    "email": "owner@example.test",
+    "self": true
+   },
+   "organizer": {
+    "email": "owner@example.test",
+    "self": true
+   }
+  },
+  {
+   "id": "no0attendees",
+   "status": "confirmed",
+   "summary": "Errand",
+   "start": {
+    "dateTime": "2026-10-07T14:40:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:40:00+09:00"
+   },
+   "creator": {
+    "email": "owner@example.test",
+    "self": true
+   },
+   "organizer": {
+    "email": "owner@example.test",
+    "self": true
+   }
+  },
+  {
+   "id": "focus0time",
+   "status": "confirmed",
+   "summary": "Focus",
+   "eventType": "focusTime",
+   "start": {
+    "dateTime": "2026-10-07T14:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T16:00:00+09:00"
+   },
+   "creator": {
+    "email": "owner@example.test",
+    "self": true
+   },
+   "organizer": {
+    "email": "owner@example.test",
+    "self": true
+   }
+  },
+  {
+   "id": "ooo0day",
+   "status": "confirmed",
+   "summary": "Out of office",
+   "eventType": "outOfOffice",
+   "start": {
+    "dateTime": "2026-10-07T00:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T23:59:00+09:00"
+   },
+   "creator": {
+    "email": "owner@example.test",
+    "self": true
+   },
+   "organizer": {
+    "email": "owner@example.test",
+    "self": true
+   }
+  },
+  {
+   "id": "cancelled0one",
+   "status": "cancelled",
+   "summary": "Cancelled",
+   "start": {
+    "dateTime": "2026-10-07T14:00:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:00:00+09:00"
+   },
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "no0start",
+   "status": "confirmed",
+   "summary": "Broken",
+   "end": {
+    "dateTime": "2026-10-07T15:00:00+09:00"
+   }
+  },
+  {
+   "id": "korean0title",
+   "status": "confirmed",
+   "summary": "주간 회의",
+   "start": {
+    "dateTime": "2026-10-07T14:45:00+09:00"
+   },
+   "end": {
+    "dateTime": "2026-10-07T15:45:00+09:00"
+   },
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  },
+  {
+   "id": "zulu0time",
+   "status": "confirmed",
+   "summary": "UTC meeting",
+   "start": {
+    "dateTime": "2026-10-07T05:00:00Z"
+   },
+   "end": {
+    "dateTime": "2026-10-07T06:00:00Z"
+   },
+   "attendees": [
+    {
+     "email": "owner@example.test",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "guest@example.test",
+     "responseStatus": "accepted"
+    }
+   ],
+   "creator": {
+    "email": "guest@example.test"
+   },
+   "organizer": {
+    "email": "guest@example.test"
+   }
+  }
+ ]
+}

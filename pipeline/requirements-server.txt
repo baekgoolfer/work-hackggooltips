@@ -1,0 +1,27 @@
+# Python dependencies of the mcap-asr/1 SERVER on a Linux host with the faster-whisper (CTranslate2) backend (pipeline/mcap/asr_faster_whisper.py).
+# Install into the SERVER venv only:   python3 -m venv /opt/mcap-asr/venv && /opt/mcap-asr/venv/bin/python -m pip install -r pipeline/requirements-server.txt
+# (scripts/asr_server/install_server_linux.sh does exactly that.)
+#
+# NOT part of the client: pipeline/requirements.lock.txt (mlx-whisper, no torch) and scripts/setup_python.sh never read this file, and no
+# client module imports faster_whisper or ctranslate2. Do not add these packages to the client venv.
+#
+# What the server needs besides these three is the standard library: pipeline/mcap/asr_server.py imports numpy and nothing else that is
+# third-party. faster-whisper itself pulls in huggingface_hub (the model lookup of asr_engines.resolve_model_path), tokenizers, onnxruntime
+# and av; pip resolves them at install time. Those transitive versions are NOT pinned here, because they were never resolved against the
+# package index from this checkout. After the first verified install on the real server run `pip freeze > requirements-server.lock.txt`,
+# review it, and install from that lock (with hashes, like the client lock) from then on  [미검증].
+#
+# The three pins below are versions that existed when this file was written (faster-whisper 1.1.1 needs ctranslate2 >= 4.0, < 5). They were not
+# installed or run here. Use Python 3.11 or 3.12: numpy 1.26.4 has no wheel for 3.13 and CTranslate2 4.5.0 is not known to have one either.
+# ctranslate2 4.5.0 is built for CUDA 12 and cuDNN 9; a newer GPU generation (for example NVIDIA Blackwell) may need a newer ctranslate2: raise
+# the pin together with the CUDA libraries, then re-run `python -m mcap.asr_faster_whisper check --load`.
+faster-whisper==1.1.1
+ctranslate2==4.5.0
+numpy==1.26.4
+
+# CUDA 12 runtime libraries. Either install them with the distribution (cuBLAS 12 + cuDNN 9, see docs/ASR_SERVER_LINUX.md) or, as an
+# alternative that stays inside the venv, uncomment these two and put their lib directories on LD_LIBRARY_PATH (a systemd drop-in).
+# These two packages are proprietary NVIDIA software under NVIDIA's own licence terms: installing them means you accept those terms.
+# Never copy them into an image or archive that you publish.
+# nvidia-cublas-cu12
+# nvidia-cudnn-cu12==9.*

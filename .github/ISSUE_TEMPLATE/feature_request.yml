@@ -1,0 +1,61 @@
+name: Feature request
+description: Suggest an improvement or a new capability
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the idea. This project records other people, so please read the Non-goals in the README first, and do not paste recordings, transcripts, notes or real meeting details.
+
+        **Security problem?** Do not open an issue. Use the repository's Security tab, "Report a vulnerability" (see SECURITY.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like
+      description: Describe the behaviour, not only the implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: dropdown
+    id: privacy-impact
+    attributes:
+      label: Privacy impact
+      description: The default is private. Anything that sends more data, adds a network destination, records more or turns a lane on by default needs a discussion first.
+      options:
+        - None, it stays on the Mac and records nothing new
+        - It sends more data than today
+        - It adds a network destination
+        - It records more than today
+        - I am not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you work on it?
+      options:
+        - "Yes, I can open a pull request"
+        - "Yes, with guidance"
+        - "No"
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before you submit
+      options:
+        - label: I did not include recordings, transcripts, notes, names, e-mail addresses or API keys.
+          required: true
+        - label: I searched the existing issues and the Roadmap and Non-goals sections of the README.
+          required: true

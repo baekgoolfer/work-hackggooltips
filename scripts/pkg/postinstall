@@ -1,0 +1,179 @@
+#!/bin/bash
+# Company package of the app, POSTINSTALL: runs as root under the Installer (or an MDM) after the payload is laid down.
+#
+# The payload has put the app, the shim /usr/local/bin/mcap, the system-wide LaunchAgent, the release under
+# /Library/Application Support/MeetingCapture/releases/<version>/ and the public key of the release signature in place. This script makes them
+# trustworthy and switches on the release:
+#   1. ownership: everything the package installed belongs to root:wheel and nobody else can write it (the company runtime is a requirement:
+#      the app refuses to start a pipeline that root does not own).
+#   2. policy: the BASELINE policy.json (every external lane deny, local_only.default true) and the marker policy.required, root-owned 0644. The
+#      baseline is written ONLY when the Mac has no policy.json yet: an upgrade never replaces a revision that MDM delivered (that would close lanes
+#      the organisation opened, or worse, an older revision over a newer one). The marker is always there, so a deleted policy is a LOCK, not freedom.
+#   3. release: scripts/provision_runtime.sh --apply verifies the signed manifest and every hash of the release, makes sure root owns it, switches
+#      releases/current to it with one atomic rename and keeps the previous release (N-1). A release that does not verify is NOT activated and the
+#      installation fails (exit 20): the Mac keeps whatever it ran before.
+#   4. tools: provision_runtime.sh, provision_user_config.sh, migrate_owner_install.sh (and bundle_id.sh, which it reads) are copied to /Library/Application Support/MeetingCapture/tools/
+#      (root-owned) so that MDM can run them later, for example for users who were not logged in now. Next to them go two one-line records of what was
+#      installed (RELEASE_BUNDLE_ID, RELEASE_APP_SHORT_NAME): scripts/uninstall.sh --company finds the LaunchAgent and the app by them (sudo drops the
+#      caller's environment, so the person who runs it cannot be relied on to pass the id and the file name).
+#   5. the user at the console: their config.env is created from the company template (name, Drive folder of the company account), only if they have
+#      none (provision_user_config.sh). If their personal app had been running when preinstall put it aside, the new system LaunchAgent is loaded for
+#      them so that recording continues without a logout. A fresh install is NOT started: it starts at the next login, after the person has been
+#      through the permission prompts (docs/DEPLOY.md, first run).
+#
+# Arguments of the Installer: $1 package path, $2 destination, $3 target volume ("/" = the running system). A $3 other than "/" is a REHEARSAL (a test,
+# a staged tree): no root needed, files are not chowned (the lines say what would be), launchd is not touched, the console user comes from
+# MCAP_PKG_CONSOLE_USER / MCAP_PKG_CONSOLE_HOME (ignored on the real system).
+#
+# Exit codes: 0 fine, 13 not root, 15 the payload or the package is incomplete (also: no valid bundle identifier), 20 the release did not verify, 21 the baseline policy is missing from the package.
+
+set -euo pipefail
+
+TARGET="${3:-/}"
+PREFIX=""
+case "$TARGET" in ""|"/") ;; *) PREFIX="${TARGET%/}" ;; esac
+REHEARSAL=0
+[ -z "$PREFIX" ] || REHEARSAL=1
+if [ "$REHEARSAL" = 0 ]; then PATH=/usr/bin:/bin:/usr/sbin:/sbin; fi
+export PATH
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+SYS="$PREFIX/Library/Application Support/MeetingCapture"
+RELEASES="$SYS/releases"
+SHIM="$PREFIX/usr/local/bin/mcap"
+TOOLS="$SYS/tools"
+POLICY="$SYS/policy.json"
+MARKER="$SYS/policy.required"
+PUBKEY="$SYS/release-signing.pub.pem"
+IS_ROOT=0
+[ "$(id -u)" != 0 ] || IS_ROOT=1
+
+log()  { echo "[postinstall] $*"; }
+warn() { echo "[postinstall] WARNING: $*" >&2; }
+fail() { echo "[postinstall] ERROR: $1" >&2; exit "${2:-1}"; }
+
+if [ "$REHEARSAL" = 0 ] && [ "$IS_ROOT" != 1 ]; then
+    fail "must run as root (the Installer does). Nothing was changed." 13
+fi
+[ "$REHEARSAL" = 0 ] || log "REHEARSAL on $PREFIX: files are not chowned, launchd is not touched"
+
+# The label of the system LaunchAgent is the bundle identifier of the app: the app the payload put in place says what it is, the package's own record
+# (RELEASE_BUNDLE_ID, written by scripts/build_pkg.sh) is the answer when that app has no readable Info.plist.
+[ -f "$HERE/bundle_id.sh" ] || fail "bundle_id.sh is missing from the package scripts: the package is incomplete" 15
+# shellcheck source=../bundle_id.sh
+. "$HERE/bundle_id.sh"
+PKG_BUNDLE_ID="$({ tr -d '[:space:]' < "$HERE/RELEASE_BUNDLE_ID"; } 2>/dev/null || true)"
+mcap_valid_bundle_id "$PKG_BUNDLE_ID" || fail "the package has no valid RELEASE_BUNDLE_ID ('$PKG_BUNDLE_ID')" 15
+# the file name of the app (RELEASE_APP_SHORT_NAME, written by scripts/build_pkg.sh too) is where the payload put it
+PKG_APP_SHORT_NAME="$({ tr -d '[:space:]' < "$HERE/RELEASE_APP_SHORT_NAME"; } 2>/dev/null || true)"
+mcap_valid_app_short_name "$PKG_APP_SHORT_NAME" || fail "the package has no valid RELEASE_APP_SHORT_NAME ('$PKG_APP_SHORT_NAME')" 15
+APP="$PREFIX/Applications/$PKG_APP_SHORT_NAME.app"
+LABEL="$(MCAP_BUNDLE_ID="$PKG_BUNDLE_ID" mcap_resolve_bundle_id "$APP")" || fail "the bundle identifier of the package is refused (see above)" 15
+AGENT="$PREFIX/Library/LaunchAgents/$LABEL.plist"
+
+own() {  # own <paths...>: root:wheel, no write for group or others
+    if [ "$IS_ROOT" = 1 ]; then
+        chown -R root:wheel "$@"
+        chmod -R go-w "$@"
+    else
+        log "rehearsal, not root: would chown -R root:wheel and chmod go-w on: $*"
+        chmod -R go-w "$@"
+    fi
+}
+
+# ---- 0. the payload and the helpers are all there ------------------------------------------------------------------------------------------------
+VERSION="$(tr -d '[:space:]' < "$HERE/RELEASE_VERSION" 2>/dev/null || true)"
+FLAVOR="$(tr -d '[:space:]' < "$HERE/RELEASE_FLAVOR" 2>/dev/null || true)"
+printf '%s' "$VERSION" | grep -Eq '^[0-9]+(\.[0-9]+){1,3}$' || fail "the package has no valid RELEASE_VERSION ('$VERSION')" 15
+case "$FLAVOR" in full|client) ;; *) fail "the package has no valid RELEASE_FLAVOR ('$FLAVOR')" 15 ;; esac
+for f in provision_runtime.sh provision_user_config.sh migrate_owner_install.sh bundle_id.sh config.env.company.template; do
+    [ -f "$HERE/$f" ] || fail "$f is missing from the package scripts" 15
+done
+[ -f "$HERE/baseline-policy.json" ] || fail "baseline-policy.json is missing from the package: a company install never goes without its baseline policy" 21
+[ -d "$RELEASES/$VERSION" ] || fail "the payload has no release $VERSION under $RELEASES" 15
+[ -d "$APP" ] || fail "the payload has no app at $APP" 15
+[ -f "$AGENT" ] || fail "the payload has no LaunchAgent at $AGENT" 15
+[ -f "$SHIM" ] || fail "the payload has no shim at $SHIM" 15
+[ -f "$PUBKEY" ] || fail "the payload has no release public key at $PUBKEY" 15
+
+# ---- 1. ownership of what the payload brought ------------------------------------------------------------------------------------------------------
+own "$APP" "$AGENT" "$SHIM" "$PUBKEY"
+chmod 755 "$SHIM"
+chmod 644 "$AGENT" "$PUBKEY"
+chmod 755 "$SYS" "$RELEASES"
+if [ "$IS_ROOT" = 1 ]; then chown root:wheel "$SYS" "$RELEASES"; fi
+plutil -lint "$AGENT" >/dev/null || fail "the LaunchAgent plist is not valid: $AGENT" 15
+log "ownership: app, shim, LaunchAgent and public key are root-owned and not writable by others"
+
+# ---- 2. policy: the baseline only where there is none, the marker always -----------------------------------------------------------------------------
+if [ -e "$POLICY" ] || [ -L "$POLICY" ]; then
+    REV="$({ grep -Eo '"revision"[[:space:]]*:[[:space:]]*[0-9]+' "$POLICY" 2>/dev/null || true; } | head -n 1 | grep -Eo '[0-9]+$' || true)"
+    log "policy.json exists already (revision ${REV:-unknown}): kept, the baseline does not replace a policy that MDM delivered"
+else
+    PART="$SYS/.policy.json.part.$$"
+    cp "$HERE/baseline-policy.json" "$PART"
+    chmod 644 "$PART"
+    if [ "$IS_ROOT" = 1 ]; then chown root:wheel "$PART"; else log "rehearsal, not root: would chown root:wheel $POLICY"; fi
+    mv -f "$PART" "$POLICY"
+    log "policy.json: the baseline was installed (every external lane deny, local_only.default true), root-owned 0644"
+fi
+if [ ! -e "$MARKER" ] && [ ! -L "$MARKER" ]; then : > "$MARKER"; fi
+chmod 644 "$MARKER"
+if [ "$IS_ROOT" = 1 ]; then chown root:wheel "$MARKER"; else log "rehearsal, not root: would chown root:wheel $MARKER"; fi
+log "policy.required: in place (a Mac without its policy.json is LOCKED, never open)"
+
+# ---- 3. the release: verify, make root-owned, switch ---------------------------------------------------------------------------------------------------
+log "verifying release $VERSION ($FLAVOR) before it is switched on"
+rc=0
+/bin/bash "$HERE/provision_runtime.sh" --release-dir "$RELEASES/$VERSION" --pubkey "$PUBKEY" --flavor "$FLAVOR" --apply || rc=$?
+[ "$rc" = 0 ] || fail "release $VERSION did not verify or could not be switched on (provision_runtime.sh exit $rc, see above): releases/current was NOT changed, the installation fails. A personal install that preinstall put aside comes back with: migrate_owner_install.sh --rollback (docs/MIGRATION.md)." 20
+
+# ---- 4. tools for later ------------------------------------------------------------------------------------------------------------------------------
+install -d -m 755 "$TOOLS"
+for f in provision_runtime.sh provision_user_config.sh migrate_owner_install.sh bundle_id.sh config.env.company.template; do
+    cp "$HERE/$f" "$TOOLS/.$f.part"
+    case "$f" in *.sh) chmod 755 "$TOOLS/.$f.part" ;; *) chmod 644 "$TOOLS/.$f.part" ;; esac
+    mv -f "$TOOLS/.$f.part" "$TOOLS/$f"
+done
+for rec in "RELEASE_BUNDLE_ID:$PKG_BUNDLE_ID" "RELEASE_APP_SHORT_NAME:$PKG_APP_SHORT_NAME"; do      # both were validated at the top
+    printf '%s\n' "${rec#*:}" > "$TOOLS/.${rec%%:*}.part"
+    chmod 644 "$TOOLS/.${rec%%:*}.part"
+    mv -f "$TOOLS/.${rec%%:*}.part" "$TOOLS/${rec%%:*}"
+done
+own "$TOOLS"
+log "tools: $TOOLS (provision_runtime.sh, provision_user_config.sh, migrate_owner_install.sh, bundle_id.sh, the config template, and the records of the bundle id and the app file name of this install)"
+
+# ---- 5. the user at the console ----------------------------------------------------------------------------------------------------------------------
+CONSOLE_USER="$(stat -f %Su /dev/console 2>/dev/null || true)"
+CONSOLE_HOME=""
+if [ "$REHEARSAL" = 1 ]; then
+    CONSOLE_USER="${MCAP_PKG_CONSOLE_USER:-}"
+    CONSOLE_HOME="${MCAP_PKG_CONSOLE_HOME:-}"
+fi
+case "$CONSOLE_USER" in
+    ""|root|loginwindow|_*)
+        log "nobody is logged in at the console: no config.env was made. MDM runs  $TOOLS/provision_user_config.sh --user NAME  for the users later."
+        log "done. releases/current -> $VERSION"
+        exit 0 ;;
+esac
+if [ -z "$CONSOLE_HOME" ]; then
+    CONSOLE_HOME="$(dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory 2>/dev/null | sed -e '1s/^NFSHomeDirectory:[[:space:]]*//' -e 's/[[:space:]]*$//' | head -n 1 || true)"
+fi
+case "$CONSOLE_HOME" in
+    /*)
+        /bin/bash "$TOOLS/provision_user_config.sh" --user "$CONSOLE_USER" --home "$CONSOLE_HOME" --release-root "/Library/Application Support/MeetingCapture/releases" \
+            --template "$TOOLS/config.env.company.template" || warn "the settings file of $CONSOLE_USER could not be made (see above): MDM can run provision_user_config.sh for them"
+        # their personal app was running when preinstall put it aside: keep the app running under the new agent (no logout needed)
+        STATE="$CONSOLE_HOME/Library/Application Support/MeetingCapture/migration.state"
+        if [ "$REHEARSAL" = 0 ] && [ -f "$STATE" ] && grep -q '^agent_was_loaded=1$' "$STATE"; then
+            USER_ID="$(id -u "$CONSOLE_USER" 2>/dev/null || true)"
+            if [ -n "$USER_ID" ]; then
+                launchctl bootstrap "gui/$USER_ID" "$AGENT" 2>/dev/null && log "the company LaunchAgent was loaded for $CONSOLE_USER (their personal agent had been running)" \
+                    || warn "could not load the LaunchAgent for $CONSOLE_USER: it starts at the next login"
+            fi
+        elif [ "$REHEARSAL" = 1 ] && [ -f "$STATE" ] && grep -q '^agent_was_loaded=1$' "$STATE"; then
+            log "rehearsal: would load the company LaunchAgent for $CONSOLE_USER (their personal agent had been running)"
+        fi ;;
+    *) warn "cannot tell the home directory of $CONSOLE_USER: no config.env was made" ;;
+esac
+log "done. releases/current -> $VERSION. The app starts at the next login (docs/DEPLOY.md: first run, permissions)."

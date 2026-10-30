@@ -1,0 +1,19 @@
+# The Python runtime that goes into the app installer (the dmg): scripts/fetch_python_runtime.sh downloads it, scripts/build_dmg.sh refuses to build
+# while a value below is still PENDING. Plain KEY=VALUE lines; the scripts read them with grep, never with `source`.
+#
+# What it is: a relocatable CPython 3.12 for Apple silicon from the python-build-standalone project (the "install_only" archive of
+# aarch64-apple-darwin). The first-run helper unpacks it to ~/Library/Application Support/MeetingCapture/runtime/python and builds the
+# venv from it, so whoever installs the app needs no Homebrew and no Python of their own.
+#
+# To fill the two PENDING values once (docs/DISTRIBUTE.md section 2): open the release page of python-build-standalone on GitHub, pick a release
+# that has cpython-3.12.<patch>+<release>-aarch64-apple-darwin-install_only.tar.gz, copy the address of that file into URL (https only) and the
+# sha256 that the release page lists for it (or the output of  shasum -a 256  on the file you downloaded) into SHA256. Nothing in this repository
+# knows a release name: the address and the checksum are YOUR decision, and the script checks the download against the checksum before it keeps it.
+# Not verified: that the pinned packages (verified on Python 3.13.2) install on the 3.12 you pick, and that the archive runs on a Mac without
+# developer tools. Test the finished dmg on a second Mac (docs/DISTRIBUTE.md section 7).
+
+PYTHON_SERIES=3.12
+TARGET=aarch64-apple-darwin
+FLAVOR=install_only
+URL=PENDING
+SHA256=PENDING

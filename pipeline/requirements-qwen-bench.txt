@@ -1,0 +1,6 @@
+# Optional, BENCHMARK ONLY (SPEC 13.2 / 14.4: Qwen3-ASR is not part of the production path). Goes ONLY into the SEPARATE bench venv
+# (SUPPORT_DIR/bench-venv), NEVER into the production venv (SUPPORT_DIR/venv). Install AFTER requirements.lock.txt:
+#   pip install --no-deps -r requirements-qwen-bench.txt      (scripts/setup_python.sh --with-qwen-bench does this, into bench-venv)
+# mlx-qwen3-asr 0.4.4 needs only mlx, numpy, regex and huggingface-hub, all pinned in requirements.lock.txt.
+# Do not install the official `qwen-asr` package (pins transformers 4.57, drags gradio/flask) nor torch.
+mlx-qwen3-asr==0.4.4

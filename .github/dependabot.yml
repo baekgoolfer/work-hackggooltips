@@ -1,0 +1,29 @@
+# Weekly update PRs for the pinned GitHub Actions and the pinned Python packages. Dependabot only opens pull requests: CI must pass and a
+# maintainer must merge. Read docs/RELEASING.md ("Updating pins") before merging a Python pin update: pipeline/requirements.lock.txt is
+# installed with --no-deps, so a bump must keep the pins consistent (mlx and mlx-metal, numpy in the lock and in requirements.client.txt).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: pip
+    directory: /pipeline # every pipeline/requirements*.txt file
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      python-pins:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    commit-message:
+      prefix: deps

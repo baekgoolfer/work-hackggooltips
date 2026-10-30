@@ -1,0 +1,8 @@
+{
+ "_fixture": "DOCUMENT-DERIVED FIXTURE, not recorded from a real account: the shape follows Google's public reference (Calendar API events.list / Events resource, OAuth 2.0 for installed apps). Names, addresses and ids are invented.",
+ "access_token": "ya29.CANARY-access-aaaaaaaaaaaaaaaa",
+ "expires_in": 3599,
+ "refresh_token": "1//0gCANARY-refresh-rrrrrrrrrrrr",
+ "scope": "https://www.googleapis.com/auth/calendar.readonly",
+ "token_type": "Bearer"
+}

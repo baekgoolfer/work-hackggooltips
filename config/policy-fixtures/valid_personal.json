@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "profile": "personal",
+  "revision": 3,
+  "issued": "2026-10-14T09:00:00+09:00",
+  "lanes": {
+    "asr_cloud": "Allow",
+    "llm": true,
+    "calendar": "deny",
+    "drive": "allow"
+  },
+  "local_only": {
+    "default": true
+  },
+  "recording": {
+    "enabled": false
+  }
+}

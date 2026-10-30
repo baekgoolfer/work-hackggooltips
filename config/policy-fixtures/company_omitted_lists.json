@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "profile": "company",
+  "revision": 5,
+  "issued": "2026-10-14T09:00:00+09:00",
+  "min_pipeline_version": "0.2.0",
+  "lanes": {
+    "asr_remote": "allow",
+    "asr_cloud": "allow",
+    "llm": "allow",
+    "calendar": "allow",
+    "drive": "allow"
+  },
+  "approvals": {
+    "asr_cloud": "LEGAL-77",
+    "llm": "LEGAL-78",
+    "calendar": "LEGAL-79",
+    "drive": "TICKET-1234"
+  },
+  "llm": {
+    "claude_bin_pin": {
+      "team_id": "ABCDE12345"
+    }
+  }
+}

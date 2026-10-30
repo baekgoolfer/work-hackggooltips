@@ -1,0 +1,19 @@
+# One line ending everywhere: the scripts run under macOS bash 3.2 and several tests compare files byte for byte.
+* text=auto eol=lf
+
+# Extension-less files that are text
+Makefile text eol=lf
+scripts/pkg/preinstall text eol=lf
+scripts/pkg/postinstall text eol=lf
+
+# Binary files: the generated application icon and images
+*.icns binary
+*.png binary
+
+# Audio is never committed (see .gitignore); if it is forced in anyway, git must not try to normalise or merge it
+*.wav binary
+*.m4a binary
+*.caf binary
+
+# Keep documentation out of the repository language statistics
+docs/** linguist-documentation

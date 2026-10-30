@@ -1,0 +1,126 @@
+#!/bin/bash
+# Company package of the app, PREINSTALL: runs as root under the Installer (or an MDM) before the payload is laid down.
+#
+# It does these things, in this order, and stops with a plain message (stderr goes to /var/log/install.log and into the MDM report) when one fails:
+#   1. refuses a Mac that cannot run the app: not Apple silicon (exit 10) or macOS older than 14.4 (exit 11). The distribution file refuses the same
+#      two before anything is copied; an MDM that unpacks the component package skips that file, so it is checked here once more.
+#   1b. refuses a Mac that lacks the BASE PYTHON of the release's venv (exit 16): the package does not carry it, every Mac needs it at the same path
+#      first, root-owned and not writable by others (docs/DEPLOY.md 3.1). The check comes BEFORE anything is put aside: a failed postinstall would
+#      leave the Mac without a working app. The path is in RELEASE_BASE_PYTHON next to this script (empty: the python is inside the release).
+#   1c. refuses a Mac that has another app in /Applications with this package's bundle id under another file name (exit 17): an older company package, or one built
+#      with another MCAP_APP_SHORT_NAME. Two apps with one id would share one login agent and one set of permissions, and the old one would stay next to
+#      the new one. Also checked BEFORE anything is put aside. (The app of the same file name is the upgrade: it is replaced by the payload.)
+#   2. finds the PERSONAL install of the logged-in user (the user's own build: ~/Applications/<short name>.app or any app there with the package's bundle id, the per-user LaunchAgent named
+#      after its bundle id, config.env) and puts it aside with scripts/migrate_owner_install.sh --backup: the agent is booted out, the app and the plist are
+#      moved to *.prev, config.env is copied to config.env.bak. Nothing is deleted. Rollback: migrate_owner_install.sh --rollback (docs/MIGRATION.md).
+#      A recording in progress stops the installation with exit 12 and changes nothing: the MDM tries again later.
+#   3. nothing else: no policy is written here, no release is switched (postinstall does that, after the payload exists).
+#
+# Arguments of the Installer: $1 package path, $2 destination, $3 target volume ("/" for the running system), $4 system folder. A $3 other than "/" is
+# a REHEARSAL (a test, a staged tree): then root is not required, PATH is the caller's, nothing touches launchd, and the console user is taken from
+# MCAP_PKG_CONSOLE_USER / MCAP_PKG_CONSOLE_HOME (they are ignored on the real system).
+#
+# Exit codes: 0 fine, 10 not Apple silicon, 11 macOS older than 14.4, 12 a recording is in progress, 13 not root, 14 the personal install could not be put aside,
+# 15 the package is incomplete (no bundle_id.sh, no valid RELEASE_BUNDLE_ID, RELEASE_APP_NAME or RELEASE_APP_SHORT_NAME), 16 the base python of the release is missing or writable by others,
+# 17 another app in /Applications has the package's bundle id under another file name.
+
+set -euo pipefail
+
+TARGET="${3:-/}"
+PREFIX=""
+case "$TARGET" in ""|"/") ;; *) PREFIX="${TARGET%/}" ;; esac
+REHEARSAL=0
+[ -z "$PREFIX" ] || REHEARSAL=1
+if [ "$REHEARSAL" = 0 ]; then PATH=/usr/bin:/bin:/usr/sbin:/sbin; fi
+export PATH
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+log()  { echo "[preinstall] $*"; }
+fail() { echo "[preinstall] ERROR: $1" >&2; exit "${2:-1}"; }
+
+if [ "$REHEARSAL" = 0 ] && [ "$(id -u)" != 0 ]; then
+    fail "must run as root (the Installer does). Nothing was changed." 13
+fi
+[ "$REHEARSAL" = 0 ] || log "REHEARSAL on $PREFIX: no root needed, launchd is not touched"
+
+# ---- 0. the bundle identifier of this package (scripts/build_pkg.sh wrote it next to this script) ----------------------------------------------
+[ -f "$HERE/bundle_id.sh" ] || fail "bundle_id.sh is missing from the package ($HERE): the package is incomplete. Nothing was installed." 15
+# shellcheck source=../bundle_id.sh
+. "$HERE/bundle_id.sh"
+PKG_BUNDLE_ID="$({ tr -d '[:space:]' < "$HERE/RELEASE_BUNDLE_ID"; } 2>/dev/null || true)"
+mcap_valid_bundle_id "$PKG_BUNDLE_ID" || fail "the package has no valid RELEASE_BUNDLE_ID ('$PKG_BUNDLE_ID'): it is incomplete. Nothing was installed." 15
+# the names of the app, the same way (a name has spaces: only the line end is dropped)
+PKG_APP_NAME="$({ tr -d '\r\n' < "$HERE/RELEASE_APP_NAME"; } 2>/dev/null || true)"
+PKG_APP_SHORT_NAME="$({ tr -d '[:space:]' < "$HERE/RELEASE_APP_SHORT_NAME"; } 2>/dev/null || true)"
+mcap_valid_app_name "$PKG_APP_NAME" || fail "the package has no valid RELEASE_APP_NAME ('$PKG_APP_NAME'): it is incomplete. Nothing was installed." 15
+mcap_valid_app_short_name "$PKG_APP_SHORT_NAME" || fail "the package has no valid RELEASE_APP_SHORT_NAME ('$PKG_APP_SHORT_NAME'): it is incomplete. Nothing was installed." 15
+
+# ---- 1. can this Mac run the app? --------------------------------------------------------------------------------------------------------
+ARM="$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)"
+if [ "$ARM" != 1 ]; then
+    fail "$PKG_APP_NAME needs an Apple silicon Mac (hw.optional.arm64 is '$ARM'): the app is arm64 only. Nothing was installed." 10
+fi
+OS="$(sw_vers -productVersion 2>/dev/null || echo 0)"
+if ! printf '%s' "$OS" | awk -F. '{ maj = $1 + 0; min = $2 + 0; exit ((maj > 14 || (maj == 14 && min >= 4)) ? 0 : 1) }'; then
+    fail "$PKG_APP_NAME needs macOS 14.4 or newer (this Mac has $OS): the system audio capture needs it. Nothing was installed." 11
+fi
+log "ok: Apple silicon, macOS $OS"
+
+# ---- 1b. the base python the release's venv runs on (outside the release; nothing has been changed yet) -------------------------------------------
+BASE_PYTHON="$(tr -d '\r\n' < "$HERE/RELEASE_BASE_PYTHON" 2>/dev/null || true)"
+if [ -n "$BASE_PYTHON" ]; then
+    [ -f "$HERE/provision_runtime.sh" ] || fail "scripts/provision_runtime.sh is missing from the package ($HERE): the base python cannot be checked. Nothing was installed." 16
+    if /bin/bash "$HERE/provision_runtime.sh" --check-base "$BASE_PYTHON" >&2; then
+        log "ok: the base python of the release is there: $BASE_PYTHON"
+    else
+        fail "the base python of the release ($BASE_PYTHON) is missing or not trustworthy (see above): install it first, root-owned and not writable by others (docs/DEPLOY.md 3.1). Nothing was changed: a personal install is still where it was." 16
+    fi
+fi
+
+# ---- 1c. an older company app under another file name (nothing has been changed yet) ------------------------------------------------------------
+OLD_COMPANY_APPS="$({ mcap_apps_with_bundle_id "$PREFIX/Applications" "$PKG_BUNDLE_ID" | grep -vxF "$PREFIX/Applications/$PKG_APP_SHORT_NAME.app"; } || true)"
+if [ -n "$OLD_COMPANY_APPS" ]; then
+    fail "$(printf '%s\n' "$OLD_COMPANY_APPS" | tr '\n' ' ')has the bundle id of this package ($PKG_BUNDLE_ID) under another file name than $PKG_APP_SHORT_NAME.app (an older package?). Two apps with one id share one login agent and one set of permissions, and the old app would stay next to the new one. Nothing was installed. Remove the old app (its data is not touched), or build the package under the old file name (MCAP_APP_SHORT_NAME=<the old file name without .app>; docs/DEPLOY.md)." 17
+fi
+
+# ---- 2. the personal install of the person at the console ----------------------------------------------------------------------------------
+CONSOLE_USER="$(stat -f %Su /dev/console 2>/dev/null || true)"
+CONSOLE_HOME=""
+if [ "$REHEARSAL" = 1 ]; then
+    CONSOLE_USER="${MCAP_PKG_CONSOLE_USER:-}"
+    CONSOLE_HOME="${MCAP_PKG_CONSOLE_HOME:-}"
+fi
+case "$CONSOLE_USER" in
+    ""|root|loginwindow|_*)
+        log "nobody is logged in at the console: a personal install of some user cannot be looked at now (run migrate_owner_install.sh --backup --user NAME --home DIR for them later)"
+        exit 0 ;;
+esac
+if [ -z "$CONSOLE_HOME" ]; then
+    CONSOLE_HOME="$(dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory 2>/dev/null | sed -e '1s/^NFSHomeDirectory:[[:space:]]*//' -e 's/[[:space:]]*$//' | head -n 1 || true)"
+fi
+case "$CONSOLE_HOME" in /*) ;; *) log "cannot tell the home directory of $CONSOLE_USER: no personal install looked for"; exit 0 ;; esac
+
+MIGRATE="$HERE/migrate_owner_install.sh"
+LEGACY=0
+# the app is <short name>.app, or an older build under another file name that has the package's bundle id (the same id is the same login agent)
+if [ -e "$CONSOLE_HOME/Library/LaunchAgents/$PKG_BUNDLE_ID.plist" ] || [ -d "$CONSOLE_HOME/Applications/$PKG_APP_SHORT_NAME.app" ] \
+        || [ -n "$(mcap_apps_with_bundle_id "$CONSOLE_HOME/Applications" "$PKG_BUNDLE_ID")" ]; then
+    LEGACY=1
+fi
+if [ "$LEGACY" = 0 ]; then
+    log "no personal install of $CONSOLE_USER found (no per-user LaunchAgent, no ~/Applications/$PKG_APP_SHORT_NAME.app, no other app there with the id $PKG_BUNDLE_ID)"
+    exit 0
+fi
+log "a personal install of $CONSOLE_USER was found: putting it aside (nothing is deleted; undo: migrate_owner_install.sh --rollback)"
+[ -x "$MIGRATE" ] || fail "scripts/migrate_owner_install.sh is missing from the package ($MIGRATE): the personal install would run next to the company app. Nothing was installed." 14
+rc=0
+MIGRATE_ARGS=(--backup --home "$CONSOLE_HOME" --user "$CONSOLE_USER")
+[ "$REHEARSAL" = 0 ] || MIGRATE_ARGS+=(--no-launchctl)       # a rehearsal must never boot out the real agent of the Mac it runs on
+# the personal app names its own identifier (and so its agent); the package's is the answer when that app is gone and only the agent is left
+MCAP_BUNDLE_ID="$PKG_BUNDLE_ID" MCAP_APP_NAME="$PKG_APP_NAME" MCAP_APP_SHORT_NAME="$PKG_APP_SHORT_NAME" /bin/bash "$MIGRATE" "${MIGRATE_ARGS[@]}" || rc=$?
+case "$rc" in
+    0) ;;
+    3) fail "a recording is in progress for $CONSOLE_USER: installation stopped and nothing was changed. Try again after the meeting." 12 ;;
+    *) fail "the personal install of $CONSOLE_USER could not be put aside (migrate_owner_install.sh exit $rc, see above): installation stopped." 14 ;;
+esac
+log "done."
