@@ -15,8 +15,8 @@
 # installed or run here. Use Python 3.11 or 3.12: numpy 1.26.4 has no wheel for 3.13 and CTranslate2 4.5.0 is not known to have one either.
 # ctranslate2 4.5.0 is built for CUDA 12 and cuDNN 9; a newer GPU generation (for example NVIDIA Blackwell) may need a newer ctranslate2: raise
 # the pin together with the CUDA libraries, then re-run `python -m mcap.asr_faster_whisper check --load`.
-faster-whisper==1.1.1
-ctranslate2==4.5.0
+faster-whisper==1.2.1
+ctranslate2==4.8.3
 numpy==1.26.4
 
 # CUDA 12 runtime libraries. Either install them with the distribution (cuBLAS 12 + cuDNN 9, see docs/ASR_SERVER_LINUX.md) or, as an
