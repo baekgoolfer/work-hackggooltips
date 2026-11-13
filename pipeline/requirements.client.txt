@@ -13,4 +13,4 @@
 # A client-only venv cannot transcribe locally: ASR_ENGINE=whisper there ends in asr_policy_blocked, so pair it with a policy that allows the
 # remote engine (docs/POLICY.md) or leave it to MDM groups that have the full runtime.
 numpy==2.5.3
-truststore==0.10.4
+truststore==0.10.5
