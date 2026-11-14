@@ -114,7 +114,8 @@ class DefaultOutputShapeTest(unittest.TestCase):
             self.assertRegex(message, r"^transcribing (mic|remote) \d+/\d+$")
 
     def test_the_header_has_no_route_or_privacy_line(self):
-        md = tr.render_markdown(self.baseline["transcript"], dict(mg.META))
+        with mg.pinned_tz():                                                                       # the header prints this machine's zone abbreviation
+            md = tr.render_markdown(self.baseline["transcript"], dict(mg.META))
         self.assertEqual(md, (GOLDEN / "default_transcript.md").read_text(encoding="utf-8"))
         self.assertNotIn("Route:", md)
         self.assertNotIn("Privacy:", md)

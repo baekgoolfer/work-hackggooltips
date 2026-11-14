@@ -64,6 +64,7 @@ APP_PATH=""
 CURRENT_STEP=0
 STEP_TITLE=""
 DIED=0
+FINISHED=0
 CLEAN=()
 LOCK="$SUPPORT_DIR/.first-run.lock"
 LOCK_OWNED=0
@@ -72,7 +73,7 @@ LOCK_HOLDER=""
 # The names of the app, for the messages: learned from the app that holds the files once they are found (learn_names), generic words before.
 APP_NAME="the app"
 APP_SHORT_NAME=""
-APP_FILE="the app"        # "<short name>.app" once the name is known
+APP_FILE="the app"        # "<short name>.app" once the name is known; write ${APP_FILE} in braces before Korean text: in a UTF-8 locale bash 3.2 takes the first byte of a particle for part of a bare name (unbound variable)
 learn_names() {  # the Info.plist of $APP_PATH, else the environment, else the defaults (scripts/bundle_id.sh of the app that holds the files)
     local lib="$BUNDLE_DIR/scripts/bundle_id.sh" n s
     [ -f "$lib" ] || return 0               # an app that predates the names: the generic words stay
@@ -107,6 +108,8 @@ fail_step() {
 # No ERR trap (it misfires inside $(...) on bash 3.2); an unexpected failure and a Ctrl-C are reported here.
 on_exit() {
     local rc=$? f
+    # bash 3.2 hands 0 to this trap after a fatal expansion error (an unbound variable): a run that did not reach its end is never a success
+    if [ "$rc" -eq 0 ] && [ "$FINISHED" != 1 ]; then rc=1; fi
     for f in ${CLEAN[@]+"${CLEAN[@]}"}; do rm -rf "$f"; done
     # the lock is removed only while it still names this run
     if [ "$LOCK_OWNED" = 1 ] && [ "$(readlink "$LOCK" 2>/dev/null || true)" = "$$" ]; then rm -f "$LOCK"; fi
@@ -115,7 +118,7 @@ on_exit() {
         printf '%s\n' "$(t "Stopped in step [$CURRENT_STEP/$TOTAL] $STEP_TITLE (exit code $rc). Run this script again: it resumes." \
                            "[$CURRENT_STEP/$TOTAL] $STEP_TITLE 단계에서 멈췄어요 (종료 코드 $rc). 이 스크립트를 다시 실행하면 이어서 진행해요.")" >&2
     fi
-    return 0
+    exit "$rc"
 }
 trap on_exit EXIT
 trap 'exit 130' INT TERM
@@ -126,7 +129,7 @@ while [ $# -gt 0 ]; do
         --bundle) [ $# -ge 2 ] || { echo "--bundle needs a folder" >&2; exit 2; }; BUNDLE_OPT="$2"; shift ;;
         --accept-legal-notice) ACCEPT_LEGAL=1 ;;
         --lang) [ $# -ge 2 ] || { echo "--lang needs en or ko" >&2; exit 2; }; LANG_OPT="$2"; shift ;;
-        -h|--help) usage; exit 0 ;;
+        -h|--help) usage; FINISHED=1; exit 0 ;;
         *) echo "unknown option: $1 (try --help)" >&2; exit 2 ;;
     esac
     shift
@@ -221,7 +224,7 @@ say "App files: $BUNDLE_DIR" "앱 파일: $BUNDLE_DIR"
 # the recording legal notice, before anything is changed (the same text and rule as scripts/install.sh)
 if [ ! -f "$BUNDLE_DIR/scripts/legal_notice.sh" ]; then
     fail_step "The app is incomplete: scripts/legal_notice.sh is missing from $BUNDLE_DIR. Likely cause: a damaged copy of the app. Copy $APP_FILE from the disk image again." \
-        "앱이 온전하지 않아요: $BUNDLE_DIR 에 scripts/legal_notice.sh 가 없어요. 앱 복사가 잘못됐을 수 있어요. 디스크 이미지에서 $APP_FILE을 다시 복사하세요."
+        "앱이 온전하지 않아요: $BUNDLE_DIR 에 scripts/legal_notice.sh 가 없어요. 앱 복사가 잘못됐을 수 있어요. 디스크 이미지에서 ${APP_FILE}을 다시 복사하세요."
 fi
 if [ "$UI" = ko ]; then
     echo
@@ -292,7 +295,7 @@ RUNTIME_REL="$(plutil -extract python_runtime.file raw -o - "$COMPONENTS_JSON" 2
 LOCK_SHA="$(plutil -extract requirements_lock_sha256 raw -o - "$COMPONENTS_JSON" 2>/dev/null || true)"
 if ! printf '%s' "$RUNTIME_SHA" | grep -Eq '^[0-9a-f]{64}$' || ! printf '%s' "$LOCK_SHA" | grep -Eq '^[0-9a-f]{64}$' || [ -z "$RUNTIME_REL" ]; then
     PROBLEMS+=("$(t "components.json of the app is damaged or incomplete ($COMPONENTS_JSON). Copy $APP_FILE from the disk image again." \
-                    "앱의 components.json이 손상되었거나 불완전해요 ($COMPONENTS_JSON). 디스크 이미지에서 $APP_FILE을 다시 복사하세요.")")
+                    "앱의 components.json이 손상되었거나 불완전해요 ($COMPONENTS_JSON). 디스크 이미지에서 ${APP_FILE}을 다시 복사하세요.")")
 fi
 RES_DIR="$(cd "$BUNDLE_DIR/.." && pwd -P)"
 ARCHIVE=""
@@ -304,7 +307,7 @@ if [ -n "$RUNTIME_REL" ] && [ -f "$BUNDLE_DIR/$RUNTIME_REL" ]; then
     esac
 elif [ -n "$RUNTIME_REL" ]; then
     PROBLEMS+=("$(t "The Python runtime is missing from the app ($BUNDLE_DIR/$RUNTIME_REL). Copy $APP_FILE from the disk image again." \
-                    "앱에 Python 런타임이 없어요 ($BUNDLE_DIR/$RUNTIME_REL). 디스크 이미지에서 $APP_FILE을 다시 복사하세요.")")
+                    "앱에 Python 런타임이 없어요 ($BUNDLE_DIR/$RUNTIME_REL). 디스크 이미지에서 ${APP_FILE}을 다시 복사하세요.")")
 fi
 for f in setup_python.sh first_run_install.sh; do
     [ -f "$BUNDLE_DIR/scripts/$f" ] || PROBLEMS+=("$(t "The app is incomplete: scripts/$f is missing." "앱이 온전하지 않아요: scripts/$f 가 없어요.")")
@@ -364,13 +367,13 @@ else
     GOT="$(sha256_of "$ARCHIVE")"
     if [ "$GOT" != "$RUNTIME_SHA" ]; then
         fail_step "The Python runtime inside the app does not match its checksum (expected $RUNTIME_SHA, found $GOT). It was NOT unpacked. Likely cause: a damaged or changed copy of the app. Copy $APP_FILE from the disk image again (or download the disk image again) and open it." \
-            "앱 안의 Python 런타임이 체크섬과 달라요 (기대값 $RUNTIME_SHA, 실제 $GOT). 풀지 않았어요. 앱 복사가 손상되었거나 바뀌었을 수 있어요. 디스크 이미지에서 $APP_FILE을 다시 복사하거나 디스크 이미지를 다시 받아 여세요."
+            "앱 안의 Python 런타임이 체크섬과 달라요 (기대값 $RUNTIME_SHA, 실제 $GOT). 풀지 않았어요. 앱 복사가 손상되었거나 바뀌었을 수 있어요. 디스크 이미지에서 ${APP_FILE}을 다시 복사하거나 디스크 이미지를 다시 받아 여세요."
     fi
     LIST_FILE="$RT_DIR/.python.list.$$"
     CLEAN+=("$LIST_FILE")
     tar -tzf "$ARCHIVE" > "$LIST_FILE" 2>/dev/null \
         || fail_step "The runtime archive cannot be read. Likely cause: a damaged copy of the app. Copy $APP_FILE from the disk image again." \
-                     "런타임 파일을 읽을 수 없어요. 앱 복사가 손상되었을 수 있어요. 디스크 이미지에서 $APP_FILE을 다시 복사하세요."
+                     "런타임 파일을 읽을 수 없어요. 앱 복사가 손상되었을 수 있어요. 디스크 이미지에서 ${APP_FILE}을 다시 복사하세요."
     if grep -Eq '^/|(^|/)\.\.(/|$)' "$LIST_FILE" || ! grep -Eq '^(\./)?python/bin/python3$' "$LIST_FILE"; then
         fail_step "The runtime archive has an unexpected layout (an absolute path, a '..' member, or no python/bin/python3): refused." \
                   "런타임 파일의 구조가 예상과 달라서 거부했어요 (절대 경로, '..' 항목, 또는 python/bin/python3 없음)."
@@ -614,3 +617,4 @@ say "To quit: menu bar icon > Quit. To uninstall: quit the app, drag it to the T
 say "Guide and help: docs/USER_GUIDE.md (Korean: USER_GUIDE.ko.md) in the project this app comes from, or ask whoever shared the app with you." \
     "안내와 문의: 이 앱을 받은 프로젝트의 docs/USER_GUIDE.ko.md, 또는 앱을 공유한 분께 물어보세요."
 say "You can close this window." "이 창은 닫아도 돼요."
+FINISHED=1

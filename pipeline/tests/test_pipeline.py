@@ -109,6 +109,11 @@ class HappyPathTests(Base):
 
     def test_session_without_end_time_works(self):
         # a crashed recording: no end_time, but nothing has been written to it for a long time (SPEC 14.4: not "live")
+        patcher = mock.patch.dict(os.environ, {"TZ": "Asia/Seoul"})                    # note_meta prints the zone abbreviation of this machine: pin it
+        patcher.start()
+        self.addCleanup(time.tzset)                                                     # cleanups run last-in first-out: TZ is restored first
+        self.addCleanup(patcher.stop)
+        time.tzset()
         d = make_session(self.cfg, "2026-10-07_1500_zoom", start="2026-10-07T15:00:00+09:00", end=None, platform="zoom",
                          label="Zoom", title_hint="Zoom Meeting", meeting_url=None)
         age_files(d, 3600)

@@ -10,6 +10,7 @@
 #                                     labels, no label starting or ending with a hyphen, at most 155 characters. Nothing else gets into a file name, a
 #                                     sed expression, a plist or a launchctl command.
 #   mcap_bundle_id_refusal VAR VALUE  the one-line refusal text (what an identifier must look like) for a script that refuses VALUE of VAR
+#   mcap_quote VALUE                  VALUE as printf %q writes it, always plain ASCII (what the refusals and warnings print)
 #   mcap_app_bundle_id APP            the CFBundleIdentifier of APP/Contents/Info.plist; empty when the app or the key is missing
 #   mcap_resolve_bundle_id [APP...]   the identifier to use: the first APP that has one (an installed or built app is the truth about itself), else the
 #                                     environment variable MCAP_BUNDLE_ID, else MCAP_DEFAULT_BUNDLE_ID. Prints it; a bad MCAP_BUNDLE_ID prints the reason
@@ -58,9 +59,14 @@ mcap_app_bundle_id() {  # $1 = app bundle
     plutil -extract CFBundleIdentifier raw -o - "$1/Contents/Info.plist" 2>/dev/null || true
 }
 
+# a value for a message. bash 3.2 (macOS) in a UTF-8 locale writes a non-ASCII value through %q as invalid UTF-8 (the first byte raw, the rest octal), so it is quoted in the C locale: always plain ASCII
+mcap_quote() {  # $1 = the value
+    ( export LC_ALL=C; printf '%q' "$1" )
+}
+
 # the refusal text, one wording for every script: $1 = where the value came from (a variable name), $2 = the value
 mcap_bundle_id_refusal() {
-    printf '%s=%q is not a valid bundle identifier: use reverse-DNS, dot-separated labels of letters, digits and hyphens, at least two labels, no label starting or ending with a hyphen, at most 155 characters (for example org.example.meetingcapture)' "$1" "$2"
+    printf '%s=%s is not a valid bundle identifier: use reverse-DNS, dot-separated labels of letters, digits and hyphens, at least two labels, no label starting or ending with a hyphen, at most 155 characters (for example org.example.meetingcapture)' "$1" "$(mcap_quote "$2")"
 }
 
 mcap_resolve_bundle_id() {  # [app...]
@@ -69,7 +75,7 @@ mcap_resolve_bundle_id() {  # [app...]
         id="$(mcap_app_bundle_id "$app")"
         [ -n "$id" ] || continue
         if mcap_valid_bundle_id "$id"; then printf '%s\n' "$id"; return 0; fi
-        echo "WARNING: the CFBundleIdentifier of $app is not a valid identifier ($(printf '%q' "$id")): ignored" >&2
+        echo "WARNING: the CFBundleIdentifier of $app is not a valid identifier ($(mcap_quote "$id")): ignored" >&2
     done
     id="${MCAP_BUNDLE_ID:-$MCAP_DEFAULT_BUNDLE_ID}"
     if ! mcap_valid_bundle_id "$id"; then
@@ -109,11 +115,11 @@ mcap_valid_app_short_name() {  # $1 = candidate
 }
 
 mcap_app_name_refusal() {  # $1 = where the value came from (a variable name), $2 = the value
-    printf '%s=%q is not a valid app name: use ASCII letters, digits, spaces, hyphens and periods, starting with a letter or digit, no trailing space, 1 to 40 characters (for example "Example Recorder")' "$1" "$2"
+    printf '%s=%s is not a valid app name: use ASCII letters, digits, spaces, hyphens and periods, starting with a letter or digit, no trailing space, 1 to 40 characters (for example "Example Recorder")' "$1" "$(mcap_quote "$2")"
 }
 
 mcap_app_short_name_refusal() {  # $1 = where the value came from (a variable name), $2 = the value
-    printf '%s=%q is not a valid short app name: use ASCII letters and digits only, starting with a letter, 1 to 32 characters; it is the file name of the app and of its program (for example ExampleRecorder)' "$1" "$2"
+    printf '%s=%s is not a valid short app name: use ASCII letters and digits only, starting with a letter, 1 to 32 characters; it is the file name of the app and of its program (for example ExampleRecorder)' "$1" "$(mcap_quote "$2")"
 }
 
 mcap_app_display_name() {  # $1 = app bundle
@@ -130,7 +136,7 @@ mcap_resolve_app_name() {  # [app...]
         n="$(mcap_app_display_name "$app")"
         [ -n "$n" ] || continue
         if mcap_valid_app_name "$n"; then printf '%s\n' "$n"; return 0; fi
-        echo "WARNING: the CFBundleDisplayName of $app is not a valid app name ($(printf '%q' "$n")): ignored" >&2
+        echo "WARNING: the CFBundleDisplayName of $app is not a valid app name ($(mcap_quote "$n")): ignored" >&2
     done
     n="${MCAP_APP_NAME:-$MCAP_DEFAULT_APP_NAME}"
     if ! mcap_valid_app_name "$n"; then
@@ -146,7 +152,7 @@ mcap_resolve_app_short_name() {  # [app...]
         n="$(mcap_app_short_name "$app")"
         [ -n "$n" ] || continue
         if mcap_valid_app_short_name "$n"; then printf '%s\n' "$n"; return 0; fi
-        echo "WARNING: the CFBundleName of $app is not a valid short app name ($(printf '%q' "$n")): ignored" >&2
+        echo "WARNING: the CFBundleName of $app is not a valid short app name ($(mcap_quote "$n")): ignored" >&2
     done
     n="${MCAP_APP_SHORT_NAME:-$MCAP_DEFAULT_APP_SHORT_NAME}"
     if ! mcap_valid_app_short_name "$n"; then

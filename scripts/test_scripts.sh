@@ -989,6 +989,9 @@ N=$((N + 1)); OUT="$WORK/out.$N.txt"
 out_has 'selftest-policy' "make test-swift runs selftest-policy (the CI swift job runs make test-swift)"
 out_has 'selftest-detector' "... next to selftest-detector"
 grep -q 'make test-swift' "$ROOT/.github/workflows/ci.yml"; check $? "the CI swift job runs make test-swift"
+grep -q 'make test-swift SWIFT_TESTS=logic' "$ROOT/.github/workflows/ci.yml"; check $? "the CI swift job runs the logic part of make test-swift as a blocking step"
+CI_SOFT="$(grep -B1 'continue-on-error: true' "$ROOT/.github/workflows/ci.yml" | grep -- '- name:' | sed 's/.*- name: //' | sort | tr '\n' '|')"
+[ "$CI_SOFT" = "Capture self tests (real time; a warning on a shared runner)|shellcheck (warnings and errors)|" ]; check $? "only shellcheck and the real-time capture self test are allowed to fail in CI (continue-on-error)"
 N=$((N + 1)); OUT="$WORK/out.$N.txt"
 ( cd "$ROOT" && make -n confirm-live-tested ) > "$OUT" 2>&1
 out_has 'scripts/make_launchagent.sh --confirm-live-tested' "make confirm-live-tested runs make_launchagent.sh --confirm-live-tested"
@@ -3038,13 +3041,15 @@ plutil -lint "$AGENTP" >/dev/null 2>&1; check $? "payload: the LaunchAgent plist
 SHIMF="$PAYLOAD/usr/local/bin/mcap"
 [ -x "$SHIMF" ] && [ "$(stat -f %Lp "$SHIMF")" = 755 ] && /bin/sh -n "$SHIMF"; check $? "the shim /usr/local/bin/mcap is an executable 0755 shell script"
 # the shim, run against a fake release with a HOSTILE caller environment
+# DYLD_INSERT_LIBRARIES names a dylib that every Mac has: where SIP is off (a CI runner) the /bin/sh that runs the shim honours the variable, and a file that
+# does not exist would abort that shell (dyld, exit 134) before the shim runs
 mkdir -p "$WORK/shimroot/venv/bin" "$WORK/shimroot/pipeline"
 printf '#!/bin/sh\nenv | sort\necho "ARGS: $*"\n' > "$WORK/shimroot/venv/bin/python"; chmod 755 "$WORK/shimroot/venv/bin/python"
 sed "s|RELEASE=\"/Library/Application Support/MeetingCapture/releases/current\"|RELEASE=\"$WORK/shimroot\"|" "$SHIMF" > "$WORK/shim-under-test"; chmod 755 "$WORK/shim-under-test"
 grep -q "RELEASE=\"$WORK/shimroot\"" "$WORK/shim-under-test"; check $? "(premise) the shim names the release path I replaced"
 N=$((N + 1)); OUT="$WORK/out.$N.txt"
 env -i HOME=/Users/someone USER=someone PATH=/evil/bin:/opt/homebrew/bin MCAP_CONFIG=/evil/config.env MCAP_POLICY_PATH=/evil/policy.json MCAP_APP_NAME=Evil MCAP_APP_SHORT_NAME=Evil PYTHONPATH=/evil/py PYTHONHOME=/evil/home \
-    PYTHONSTARTUP=/evil/start.py DYLD_INSERT_LIBRARIES=/evil/lib.dylib SSL_CERT_FILE=/evil/ca.pem HTTPS_PROXY=http://evil:8080 SOMETHING_ELSE=1 /bin/sh "$WORK/shim-under-test" status --json > "$OUT" 2>&1; RC=$?
+    PYTHONSTARTUP=/evil/start.py DYLD_INSERT_LIBRARIES=/usr/lib/libSystem.B.dylib SSL_CERT_FILE=/evil/ca.pem HTTPS_PROXY=http://evil:8080 SOMETHING_ELSE=1 /bin/sh "$WORK/shim-under-test" status --json > "$OUT" 2>&1; RC=$?
 rc_is 0 "the shim runs the release python"
 out_has '^ARGS: -m mcap status --json$' "the shim runs  python -m mcap <the caller's arguments>"
 out_has "^PYTHONPATH=$WORK/shimroot/pipeline$" "PYTHONPATH is the pipeline of the release, nothing of the caller's"
@@ -4770,6 +4775,35 @@ fr_run "2
 "
 rc_not 0 "a damaged components.json is refused"
 out_has 'damaged or incomplete' "... with the cause"
+# the same refusals in a UTF-8 locale, whatever locale the suite runs in (a Mac with a UTF-8 Terminal): bash 3.2 reads "$NAME" followed by a Korean
+# particle as one variable name there, and set -u then aborted the run with exit code 0 before the message
+fr_env
+printf 'tampered' >> "$FAKE_RES/runtime/python-runtime.tar.gz"
+fr_run "2
+" LC_ALL=en_US.UTF-8
+rc_is 1 "UTF-8 locale: a runtime archive that does not match components.json is refused with exit code 1"
+out_has 'ERROR in step \[2/7\]' "... in step 2"
+out_has 'does not match its checksum' "... with the cause"
+fr_run "2
+" LC_ALL=en_US.UTF-8 MCAP_UI_LANGUAGE=ko
+rc_is 1 "... and in Korean"
+out_has '체크섬과 달라요' "... with the Korean cause"
+fr_env
+printf 'not json' > "$FAKE_MC/components.json"
+fr_run "2
+" LC_ALL=en_US.UTF-8
+rc_is 1 "UTF-8 locale: a damaged components.json is refused with exit code 1"
+out_has 'damaged or incomplete' "... with the cause"
+# a fatal shell error (here an unbound variable) never looks like a success
+fr_env
+sed '/^trap .exit 129. HUP$/ s/$/; : "$MCAP_TEST_UNSET_VARIABLE"/' "$FAKE_MC/scripts/first_run_install.sh" > "$FAKE_MC/scripts/first_run_install.fatal.sh"
+FR_SCRIPT="$FAKE_MC/scripts/first_run_install.fatal.sh"
+fr_run ""
+FR_SCRIPT=""
+rc_is 1 "a fatal shell error (unbound variable) ends with exit code 1, not 0"
+out_has 'unbound variable' "... the shell's own message is shown"
+out_has 'Stopped in step' "... and the helper says where it stopped"
+[ -z "$(LC_ALL=C grep -rnE --include='*.sh' '\$[A-Za-z_][A-Za-z_0-9]*[^ -~]' "$ROOT/scripts" 2>/dev/null | head -n 1)" ]; check $? "no script writes a bare \$NAME right before a non-ASCII character (write \${NAME}: bash 3.2 in a UTF-8 locale takes the first byte for part of the name)"
 
 # --- resume after a failure at each step ---------------------------------------------------------------------------
 fr_env
@@ -5196,10 +5230,13 @@ for rel in ("docs/DISTRIBUTE.md", "docs/USER_GUIDE.ko.md", "docs/USER_GUIDE.md",
             "scripts/python-runtime.lock", "README.md", "README.ko.md", "docs/INSTALL.md"):
     found = re.findall(r"colleague|employee|company drive|직원|동료|사내|설치 담당|the owner", read(rel), re.I)
     need(not found, "%s has owner-specific wording: %s" % (rel, sorted(set(found))))
-# nothing publishes by itself, and no README claims that a download exists
+# nothing publishes by itself, and no README claims that a download exists; the one link a README may carry is the page of the release of this tree's own version, which the maintainer creates when publishing
 need("gh release" not in dist and "gh release" not in read("Makefile") and "gh release" not in build, "no command of DISTRIBUTE.md, the Makefile or build_dmg.sh may publish a release")
+tree_version = read("VERSION").strip()
 for rel in ("README.md", "README.ko.md", "docs/DISTRIBUTE.md", "docs/USER_GUIDE.ko.md", "docs/USER_GUIDE.md", "dmg/README-install.txt"):
-    need(re.search(r"github\.com/[^\s)]+/releases", read(rel)) is None, "%s must not link to a release that may not exist" % rel)
+    links = [l for l in re.findall(r"github\.com/[^\s)]+/releases[^\s)]*", read(rel))
+             if not (rel.startswith("README") and re.search(r"/releases/tag/[^/]*" + re.escape(tree_version) + r"$", l))]
+    need(not links, "%s must not link to a release that may not exist (found %s)" % (rel, links))
 need("app installer" in read("CHANGELOG.md").lower() and "disk image" in read("CHANGELOG.md").lower(), "CHANGELOG.md must have an entry for the app installer (disk image)")
 need("USER_GUIDE.md" in read("CHANGELOG.md") and "Publishing a release on GitHub" in read("CHANGELOG.md"), "CHANGELOG.md must have an entry for the generalised guide and docs")
 need("first_run_install.sh" in read("SECURITY.md") or "app installer" in read("SECURITY.md").lower(), "SECURITY.md must say what the app installer does and does not protect")

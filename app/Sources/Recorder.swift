@@ -601,12 +601,8 @@ final class Recorder: SessionRecording, SessionRecordingExtras, SessionRecording
         if final { sessionFileFinal = true }
     }
 
-    private static func iso(_ date: Date) -> String {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime]
-        f.timeZone = TimeZone.current            // local offset, e.g. +09:00
-        return f.string(from: date)
-    }
+    // Local offset, e.g. +09:00, and +00:00 (never "Z") on a UTC Mac: the form of every other timestamp the app writes.
+    private static func iso(_ date: Date) -> String { ShellUtil.iso8601(date) }
 
     private func buildSessionObject(endTime: Date?, reason: EndReason?) -> [String: Any] {
         lock.lock()

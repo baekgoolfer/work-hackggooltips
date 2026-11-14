@@ -31,6 +31,8 @@ ARGS ?=
 BUILD_ARGS ?=
 
 SWIFT_SOURCES := $(wildcard app/Sources/*.swift)
+# Which Swift self tests `make test-swift` runs: all (default), logic (detector, session, policy) or capture (the synthetic capture test, which checks real-time rates and windows)
+SWIFT_TESTS ?= all
 
 .PHONY: help build test test-swift test-python test-scripts install uninstall doctor set-api-key setup-python signing-identity confirm-live-tested clean lint bench-kit pkg policy hash-lock fetch-runtime dmg
 
@@ -67,16 +69,21 @@ test: test-scripts test-swift test-python ## all device-free tests (script tests
 
 # Device-free self tests: no microphone, no system audio, no permission prompt. Logs and temp files go to a temp dir,
 # never into ~/Library/Logs/MeetingCapture or the real Application Support folder.
-test-swift: build ## Swift self tests: selftest-detector, selftest-session, selftest-policy, selftest-capture --synthetic
+test-swift: build ## Swift self tests: selftest-detector, selftest-session, selftest-policy, selftest-capture --synthetic (SWIFT_TESTS=logic or capture: one part)
 	@set -e; \
+	case "$(SWIFT_TESTS)" in all|logic|capture) ;; *) echo "SWIFT_TESTS must be all, logic or capture (got: $(SWIFT_TESTS))" >&2; exit 2 ;; esac; \
 	T="$$(mktemp -d "$${TMPDIR:-/tmp}/mcap-test.XXXXXX")"; trap 'rm -rf "$$T"' EXIT; \
 	export TMPDIR="$$T" MCAP_LOG_DIR="$$T/logs" MCAP_CONFIG="$$T/config.env"; \
 	mkdir -p "$$T/logs"; : > "$$T/config.env"; \
-	echo "== selftest-detector";  "$(APP_BIN)" selftest-detector; \
-	echo "== selftest-session";   "$(APP_BIN)" selftest-session; \
-	echo "== selftest-policy";    "$(APP_BIN)" selftest-policy; \
-	echo "== selftest-capture --synthetic"; "$(APP_BIN)" selftest-capture --synthetic --seconds 5 --out "$$T/capture"; \
-	echo "swift self tests: all passed"
+	if [ "$(SWIFT_TESTS)" != capture ]; then \
+	    echo "== selftest-detector";  "$(APP_BIN)" selftest-detector; \
+	    echo "== selftest-session";   "$(APP_BIN)" selftest-session; \
+	    echo "== selftest-policy";    "$(APP_BIN)" selftest-policy; \
+	fi; \
+	if [ "$(SWIFT_TESTS)" != logic ]; then \
+	    echo "== selftest-capture --synthetic"; "$(APP_BIN)" selftest-capture --synthetic --seconds 5 --out "$$T/capture"; \
+	fi; \
+	echo "swift self tests$(if $(filter-out all,$(SWIFT_TESTS)), ($(SWIFT_TESTS))): all passed"
 
 test-python: ## Python unittest (pipeline/tests); PY=... selects the interpreter (needs numpy)
 	@"$(PY)" -c 'import numpy' >/dev/null 2>&1 || { \

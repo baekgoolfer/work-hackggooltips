@@ -1718,6 +1718,8 @@ D="$(cd "$(dirname "$0")" && pwd)"
 echo "hello from fakepython"
 if [ "$3" = "reprocess" ]; then
   if [ "$4" = "--pending" ]; then
+    # While bin/hold exists the sweep stays alive, so the launcher's poll sees it running; the cap keeps a launcher that never reports from hanging the suite.
+    n=0; while [ -e "$D/hold" ] && [ "$n" -lt 300 ]; do sleep 0.05; n=$((n + 1)); done
     MODE="$(cat "$D/pending-mode" 2>/dev/null || echo none)"
     case "$MODE" in
       ok) ARCH="$D/../archive/2026-10/2026-10-06_0900_Retried-One"; mkdir -p "$ARCH"
@@ -5136,9 +5138,14 @@ private func testPipelineSweepJob(_ base: URL) {
         let l = PipelineLauncher(config: w.config, logDir: w.logs, statePollInterval: 0.05, stallTimeout: 600)
         let e = EventLog()
         l.onEvent = { e.add($0) }
+        // The stage text comes from a poll tick while the job runs (a fast machine finishes the fake before the first tick): hold the sweep until it was shown.
+        let hold = w.bin.appendingPathComponent("hold")
+        try? "".write(to: hold, atomically: true, encoding: .utf8)
         l.reprocessPending()
-        _ = waitUntil(20) { e.strings.contains { $0.hasPrefix("nothing:") || $0.hasPrefix("failed:") || $0.hasPrefix("finished:") } }
-        Thread.sleep(forTimeInterval: 0.3)
+        _ = waitUntil(10) { e.strings.contains("progress:retry-sweep:Retrying failed meetings") }
+        try? FileManager.default.removeItem(at: hold)
+        // A sweep ends with 'nothing' or 'failed' (after any 'finished'): wait for that one, not for the first event.
+        _ = waitUntil(20) { e.strings.contains { $0.hasPrefix("nothing:") || $0.hasPrefix("failed:") } }
         return (e.strings, e.all)
     }
 
