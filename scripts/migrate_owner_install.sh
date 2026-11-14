@@ -260,7 +260,7 @@ backup_undo() {
 abort_backup() { backup_undo; die "$1"; }
 
 do_backup() {
-    local was_loaded=0 had_agent=0 had_app=0 bak="" bak_made=0 state_made=0 booted_out=0 moved_agent=0 moved_app=0
+    local was_loaded=0 had_agent=0 had_app=0 bak="" bak_made=0 state_made=0 booted_out=0 moved_agent=0 moved_app=0 stamp n
     check_path "$AGENT"; check_path "$APP"; check_path "$CONFIG"
     [ ! -e "$STATE" ] || die "a migration is already recorded ($STATE): run --rollback to undo it or --finish to close it"
     [ ! -e "$AGENT.prev" ] || die "$AGENT.prev exists already: a former migration was not closed (--rollback or --finish first)"
@@ -279,7 +279,11 @@ do_backup() {
     # folder that is not writable, a name that is taken, a link in the way) nothing has been booted out or moved yet.
     if [ -f "$CONFIG" ]; then
         bak="$CONFIG.bak"
-        [ ! -e "$bak" ] || bak="$CONFIG.bak.$(date +%Y%m%d%H%M%S)"
+        if [ -e "$bak" ]; then
+            # a second run within the same second (a fast machine, a test) gets a counter: the state record names whatever file was made
+            stamp="$(date +%Y%m%d%H%M%S)"; bak="$CONFIG.bak.$stamp"; n=1
+            while [ -e "$bak" ] && [ "$n" -lt 100 ]; do bak="$CONFIG.bak.$stamp-$n"; n=$((n + 1)); done
+        fi
         [ ! -e "$bak" ] || die "$bak exists already"
     fi
     if [ "$DRY_RUN" = 1 ]; then

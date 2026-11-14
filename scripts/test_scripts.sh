@@ -2854,6 +2854,13 @@ rc_is 0 "--finish"
 [ ! -e "$LA.prev" ] && [ ! -e "$APPD.prev" ] && [ ! -e "$SUPPORT/migration.state" ] && [ -f "$SUPPORT/config.env.bak" ]; check $? "--finish deletes the .prev copies and the state, keeps config.env.bak"
 runx /bin/bash "$MG" --home "$H" --rollback
 rc_not 0 "--rollback after --finish: nothing to roll back"
+# two backups within one second (a fast machine, a rehearsal run twice): the second name gets a counter instead of the run failing
+legacy_home
+printf 'x\n' > "$SUPPORT/config.env.bak"; printf 'x\n' > "$SUPPORT/config.env.bak.20260101000000"
+mkdir -p "$WORK/fakedate"; printf '#!/bin/sh\necho 20260101000000\n' > "$WORK/fakedate/date"; chmod 755 "$WORK/fakedate/date"
+runx env STUB_LAUNCHCTL_RC=3 PATH="$WORK/fakedate:$PATH" /bin/bash "$MG" --home "$H" --backup
+rc_is 0 "--backup when config.env.bak and the stamped name of this second exist already: the run goes on"
+[ -f "$SUPPORT/config.env.bak.20260101000000-1" ] && grep -q '^config_bak=config.env.bak.20260101000000-1$' "$SUPPORT/migration.state"; check $? "... the copy gets a counter and migration.state names that file"
 # the rehearsal: a copy in a temp home; the real home is only read, launchctl is never called
 legacy_home
 BEFORE="$(tree_sum "$H")"
